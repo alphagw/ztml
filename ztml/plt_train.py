@@ -82,8 +82,33 @@ def plt_features():
     train_data = data[:, :-1]
     label = data[:, -1]
     a = np.corrcoef(data, rowvar=0)
-    sns.heatmap(a, vmin=0, vmax=1)
-    plt.savefig('heatmap.pdf')
+    b = np.triu(a)
+    auto_get_corelated_group(data=b, is_triu=True)
+    # print(b[2, 67])
+    # for ix, iy in ii:
+    #     if ix != iy:
+    #         print(a[ix, iy])
+    # sns.heatmap(b, vmin=0, vmax=1)
+    # plt.savefig('1.pdf')
+
+
+def auto_get_corelated_group(data, coref_val=0.9, is_triu=False):
+    if is_triu:
+        pass
+    else:
+        data = np.triu(data)
+        
+    double_index = np.where(data > coref_val)
+    index_final = [[double_index[0][m], double_index[1][m]]
+                   for m in range(len(double_index[0]))
+                   if double_index[0][m] != double_index[1][m]]
+    print(index_final)
+    fd = [[]]
+    _tmp_data = index_final.pop(0)
+    print(np.where(index_final[0][0] == fd[0][0]))
+    # fd[0].append(index_final[][:, 0])
+    print(fd)
+    # for m in fn:
     
 
 if __name__ == '__main__':
