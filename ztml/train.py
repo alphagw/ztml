@@ -15,18 +15,18 @@ import math
 import torch
 import torch.nn as nn
 from ztml.read_data import load_pmdata
+from matfleet.utilities import now_time
 
 
 class DNN(nn.Module):
     DP_RADIO = 0.3
     B_ININT = -0.0
-    # ACTIVATION = nn.Sigmoid()
-    ACTIVATION = nn.ReLU()
 
-    def __init__(self, n_feature, n_hidden, n_output, batch_normalize=True, dropout=True):
+    def __init__(self, n_feature, n_hidden, n_output, batch_normalize=True, dropout=True, activation=nn.ReLU()):
         super(DNN, self).__init__()
         assert isinstance(n_hidden, (list, tuple))
-        
+
+        self.ACTIVATION = activation
         self.do_bn = batch_normalize
         self.do_dp = dropout
         self.fcs , self.bns, self.dps = [], [], []
@@ -73,13 +73,16 @@ def adjust_learning_rate(optimizer, lr):
         param_group['lr'] = lr
 
 
-def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True):
+def do_time():
+    return now_time().replace(' ', '_').replace('-', '_').replace(':', '_')
+
+def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True, save_dir=''):
     csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
     train_pmdata_loader = load_pmdata(csv_file=csv_fn, shuffle=True, zt=True, batch_size=840)
 
     n_feature = 34
     
-    HIDDEN_NODES = [1000, 500, 100, 20]
+    HIDDEN_NODES = [100, 50, 50, 20]
     
     if cuda:
         dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True).cuda()
@@ -96,13 +99,14 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True)
     # reg_loss = 0
     # for param in dnn.parameters():
     #     reg_loss += l1_crit(param, 100)
-    
+    tfn = os.path.join(save_dir, 'running_%s.log' % do_time())
+
     for ep in range(epoch):
         epoch = ep + 1
-        if epoch % 1500 == 0:
-            lr = lr * 0.5
-            adjust_learning_rate(optimizer, lr)
-            
+        # if epoch % 1500 == 0:
+        #     lr = lr * 0.5
+        #     adjust_learning_rate(optimizer, lr)
+
         for step, (b_x, b_y) in enumerate(train_pmdata_loader):
             # input_data = torch.DoubleTensor(b_x)
             # print(input_data)
@@ -116,7 +120,7 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True)
             output = dnn(b_x.float())
             
             label_y = b_y.reshape(-1, 1)
-            loss = loss_func(output, label_y)  # + 0.005 * reg_loss
+            loss = loss_func(output, label_y.float())  # + 0.005 * reg_loss
             # print(output.cpu().data.numpy().shape, label_y.cpu().data.numpy().shape)
             
             optimizer.zero_grad()
@@ -125,11 +129,10 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True)
             txt_temple = 'Epoch: {0} | Step: {1} | train loss: {2:.4f}'.format(epoch, step, loss.cpu().data.numpy())
             print(txt_temple)
             # now_step = step + epoch * math.ceil(TOTAL_LINE / BATCH_SIZE)
-            tfn = 'test1'
             save_module = True
-            save_dir = 'training_module'
             save_step = 1000
-            
+
+
             if epoch == 0:
                 write(tfn, txt_temple, 'w')
             else:
@@ -143,14 +146,14 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True)
                     os.mkdir(save_dir)
 
                 if epoch  % save_step == 0:
-                    torch.save(dnn, '%s/dnn_%d.pkl' % (save_dir, epoch))
-                    torch.save(dnn.state_dict(), '%s/dnn_params_%d.pkl' % (save_dir, epoch))
+                    torch.save(dnn, os.path.join(save_dir, 'dnn_%d_%s.pkl' % (epoch, do_time())))
+                    torch.save(dnn.state_dict(), os.path.join(save_dir, 'dnn_params_%d_%s.pkl' % (epoch, do_time())))
 
 
-def ttest(mp_fn=r'training_module/dnn_params_10000.pkl'):
+def ttest(mp_fn=r'training_module/dnn_params_10000.pkl', save_dir=''):
     csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
     train_pmdata_loader = load_pmdata(csv_file=csv_fn, shuffle=True)
-    HIDDEN_NODES = [1000, 500, 100, 20]
+    HIDDEN_NODES = [100, 50, 50, 20]
 
     dnn = DNN(n_feature=34, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True)
 
@@ -163,10 +166,10 @@ def ttest(mp_fn=r'training_module/dnn_params_10000.pkl'):
         output = dnn(b_x.float())
         
         label_y = b_y.reshape(-1, 1)
-        loss = loss_func(output, label_y)
+        loss = loss_func(output, label_y.float())
         # print('loss: ', loss.data.numpy(), 'label_y: ', label_y.data.numpy(), 'predict_y: ', output.data.numpy())
         print('loss: ', loss.data.numpy())
-        with open("results.out", 'w') as f:
+        with open(os.path.join(save_dir, "results.out"), 'w') as f:
             for i in range(len(label_y.data.numpy())):
                 f.write("%.7f     %.7f\n" % (label_y.data.numpy()[i][0], output.data.numpy()[i][0]) )
                 print(label_y.data.numpy()[i][0], '   ', output.data.numpy()[i][0])
@@ -181,5 +184,6 @@ def write(fn, content, mode='w'):
 
 
 if __name__ == '__main__':
-    # train()
-    ttest()
+    save_dir = 'training_module'
+    # train(cuda=False, save_dir=save_dir)
+    ttest(mp_fn=os.path.join(save_dir, 'dnn_params_1000_2021_06_09_16_53_29.694827.pkl'), save_dir=save_dir)
