@@ -64,7 +64,45 @@ def auto_get_corelated_group(data, coref_val=0.9, is_triu=False, get_remove=True
         return gp
 
 
-def plt_features():
+def plt_features_73():
+    csv_file = r'G:\ztml\ztml\data\clean_data.csv'
+    ori_data = pd.read_csv(csv_file)
+    column = ori_data.columns.values.tolist()[:-2]
+    data = ori_data.values
+    train_data = data[:, :-2]
+    dd = np.corrcoef(train_data, rowvar=0)
+    print(dd.shape)
+    
+    ax = sns.heatmap(dd, vmin=0, vmax=1)
+    ax.set_xticks(np.array(range(0, len(column), 2)))
+    ax.set_xlim(0, len(column))
+    ax.set_xticks(np.array(range(0, len(column), 2)) + 0.5, minor=True)
+
+    ax.set_yticks(np.array(range(0, len(column), 2)))
+    ax.set_ylim(0, len(column))
+    ax.set_yticks(np.array(range(0, len(column), 2)) + 0.5, minor=True)
+
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+    ax.set_xticklabels([column[i][:5] for i in range(len(column)) if i % 2 == 0], fontsize=8, minor=True, rotation=85)
+    ax.set_yticklabels([column[i][:5] for i in range(len(column)) if i % 2 == 0], fontsize=8, minor=True)  # va='center_baseline',
+    # import matplotlib.transforms as mtrans
+    # for i in ax.get_xticklabels():
+    #     i.set_transform(i.get_transform() + mtrans.Affine2D().translate(5.5, 10))
+
+    ax.grid(alpha=0.2, linewidth=0.1)
+    # ax.set_yticklabels(range(0, 35, 5))
+    # ax.set_xticks(range(35))
+    # ax.set_yticks(range(35))
+    #
+    ax.tick_params(axis='x', direction='out', labelrotation=85, length=0.00001)
+    ax.tick_params(axis='y', direction='out', labelrotation=0, length=0.00001)
+    # ax.tick_params(axis='y', labelrotation=-45)
+    # print(help(ax))
+    plt.savefig('20210609-origin-final.pdf')
+
+
+def plt_features_34():
     csv_file = r'G:\ztml\ztml\data\clean_data.csv'
     ori_data = pd.read_csv(csv_file)
     column = ori_data.columns.values.tolist()[:-2]
@@ -114,5 +152,4 @@ def plt_features():
 
 
 if __name__ == '__main__':
-    # plt_result()
-    plt_features()
+    plt_features_73()
