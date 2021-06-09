@@ -11,9 +11,7 @@ __email__ = "gjwang@buaa.edu.cn"
 __date__ = '2021/05/25 09:01:54'
 
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 
 def plt_mse(data):
@@ -60,7 +58,7 @@ def plt_result():
     with open(fn, 'r') as f:
         data = np.array([i.split() for i in f.readlines()[1:]], dtype=np.float)
     actual = data[:, 0]
-    predict =  data[:, 1]
+    predict = data[:, 1]
     # print(actual, predict)
     plt.figure(1, (8, 8))
     plt.scatter(actual, predict, edgecolors='white', linewidths=0.2)
@@ -76,41 +74,5 @@ def plt_result():
     plt.savefig('1.pdf')
 
 
-def plt_features():
-    csv_file = r'G:\ztml\ztml\data\clean_data.csv'
-    data = pd.read_csv(csv_file).values
-    train_data = data[:, :-1]
-    label = data[:, -1]
-    a = np.corrcoef(data, rowvar=0)
-    b = np.triu(a)
-    auto_get_corelated_group(data=b, is_triu=True)
-    # print(b[2, 67])
-    # for ix, iy in ii:
-    #     if ix != iy:
-    #         print(a[ix, iy])
-    # sns.heatmap(b, vmin=0, vmax=1)
-    # plt.savefig('1.pdf')
-
-
-def auto_get_corelated_group(data, coref_val=0.9, is_triu=False):
-    if is_triu:
-        pass
-    else:
-        data = np.triu(data)
-        
-    double_index = np.where(data > coref_val)
-    index_final = [[double_index[0][m], double_index[1][m]]
-                   for m in range(len(double_index[0]))
-                   if double_index[0][m] != double_index[1][m]]
-    print(index_final)
-    fd = [[]]
-    _tmp_data = index_final.pop(0)
-    print(np.where(index_final[0][0] == fd[0][0]))
-    # fd[0].append(index_final[][:, 0])
-    print(fd)
-    # for m in fn:
-    
-
 if __name__ == '__main__':
-    # plt_result()
-    plt_features()
+    plt_result()
