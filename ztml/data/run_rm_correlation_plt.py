@@ -74,18 +74,18 @@ def plt_features_73():
     print(dd.shape)
     
     ax = sns.heatmap(dd, vmin=0, vmax=1)
-    ax.set_xticks(np.array(range(0, len(column), 2)))
+    ax.set_xticks(np.array(range(0, len(column))))
     ax.set_xlim(0, len(column))
-    ax.set_xticks(np.array(range(0, len(column), 2)) + 0.5, minor=True)
+    ax.set_xticks(np.array(range(0, len(column))) + 0.5, minor=True)
 
-    ax.set_yticks(np.array(range(0, len(column), 2)))
+    ax.set_yticks(np.array(range(0, len(column))))
     ax.set_ylim(0, len(column))
-    ax.set_yticks(np.array(range(0, len(column), 2)) + 0.5, minor=True)
+    ax.set_yticks(np.array(range(0, len(column))) + 0.5, minor=True)
 
     ax.set_xticklabels([])
     ax.set_yticklabels([])
-    ax.set_xticklabels([column[i][:5] for i in range(len(column)) if i % 2 == 0], fontsize=8, minor=True, rotation=85)
-    ax.set_yticklabels([column[i][:5] for i in range(len(column)) if i % 2 == 0], fontsize=8, minor=True)  # va='center_baseline',
+    ax.set_xticklabels([column[i][:5] if i % 2 == 0 else None for i in range(len(column))], fontsize=8, minor=True, rotation=85)
+    ax.set_yticklabels([column[i][:5] if i % 2 == 0 else None for i in range(len(column))], fontsize=8, minor=True)  # va='center_baseline',
     # import matplotlib.transforms as mtrans
     # for i in ax.get_xticklabels():
     #     i.set_transform(i.get_transform() + mtrans.Affine2D().translate(5.5, 10))
