@@ -62,7 +62,7 @@ def plt_result():
     # print(actual, predict)
     plt.figure(1, (8, 8))
     plt.scatter(actual, predict, edgecolors='white', linewidths=0.2)
-    slice_set = 0.2, 0.7
+    slice_set = 0.0, 1.2
     _tmp_xy = np.linspace(slice_set, data.shape[0])
     plt.plot(_tmp_xy, _tmp_xy, 'r', linewidth=3)
     plt.xlim(slice_set)

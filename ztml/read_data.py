@@ -17,10 +17,14 @@ import torch.utils.data as Data
 
 class PmData(Dataset):
     
-    def __init__(self, csv_file):
+    def __init__(self, csv_file, zt=True):
         self.data = pd.read_csv(csv_file).values
-        self.train_data = self.data[:, :-1]
-        self.label = self.data[:, -1]
+        self.train_data = self.data[:, :-2]
+        
+        if zt:
+            self.label = self.data[:, -1]
+        else:
+            self.label = self.data[:, -2]
         
     def __getitem__(self, item):
         # train_val, label = self.data[item], self.targets[item]
@@ -30,15 +34,15 @@ class PmData(Dataset):
         return len(self.data)
 
 
-def load_pmdata(csv_file, batch_size=840, shuffle=True):
-    pmdata = PmData(csv_file)
+def load_pmdata(csv_file, batch_size=840, shuffle=True, zt=True):
+    pmdata = PmData(csv_file, zt=zt)
     train_loader = Data.DataLoader(dataset=pmdata, batch_size=batch_size, shuffle=shuffle)
     return train_loader
 
 
 if __name__ == '__main__':
     
-    root_path = r'G:\ztml\ztml\data\clean_data.csv'
+    root_path = r'G:\ztml\ztml\data\clean_data_normalized.csv'
     # a = PmData(root=root_path, ele='Sb')
     a = PmData(root_path)
     print(a[1])

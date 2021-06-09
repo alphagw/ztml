@@ -21,7 +21,7 @@ class DNN(nn.Module):
     DP_RADIO = 0.3
     B_ININT = -0.0
     # ACTIVATION = nn.Sigmoid()
-    ACTIVATION = nn.Tanh()
+    ACTIVATION = nn.ReLU()
 
     def __init__(self, n_feature, n_hidden, n_output, batch_normalize=True, dropout=True):
         super(DNN, self).__init__()
@@ -68,17 +68,23 @@ class DNN(nn.Module):
         x = self.predict(x)
         return x
 
+def adjust_learning_rate(optimizer, lr):
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
 
 def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True):
-    csv_fn = r'G:\ztml\ztml\data\clean_data.csv'
-    train_pmdata_loader = load_pmdata(csv_file=csv_fn, shuffle=True)
+    csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
+    train_pmdata_loader = load_pmdata(csv_file=csv_fn, shuffle=True, zt=True, batch_size=840)
+
+    n_feature = 34
     
     HIDDEN_NODES = [1000, 500, 100, 20]
     
     if cuda:
-        dnn = DNN(n_feature=74, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True).cuda()
+        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True).cuda()
     else:
-        dnn = DNN(n_feature=74, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True)
+        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True)
     
     if restore:
         dnn.load_state_dict(torch.load(module_params_fn))
@@ -91,7 +97,12 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True)
     # for param in dnn.parameters():
     #     reg_loss += l1_crit(param, 100)
     
-    for epoch in range(epoch):
+    for ep in range(epoch):
+        epoch = ep + 1
+        if epoch % 1500 == 0:
+            lr = lr * 0.5
+            adjust_learning_rate(optimizer, lr)
+            
         for step, (b_x, b_y) in enumerate(train_pmdata_loader):
             # input_data = torch.DoubleTensor(b_x)
             # print(input_data)
@@ -131,17 +142,17 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True)
                 else:
                     os.mkdir(save_dir)
 
-                if epoch % save_step == 0:
+                if epoch  % save_step == 0:
                     torch.save(dnn, '%s/dnn_%d.pkl' % (save_dir, epoch))
                     torch.save(dnn.state_dict(), '%s/dnn_params_%d.pkl' % (save_dir, epoch))
 
 
-def test(mp_fn=r'training_module/dnn_params_9000.pkl'):
-    csv_fn = r'G:\ztml\ztml\data\clean_data.csv'
+def ttest(mp_fn=r'training_module/dnn_params_10000.pkl'):
+    csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
     train_pmdata_loader = load_pmdata(csv_file=csv_fn, shuffle=True)
     HIDDEN_NODES = [1000, 500, 100, 20]
 
-    dnn = DNN(n_feature=74, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True)
+    dnn = DNN(n_feature=34, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True)
 
     dnn.load_state_dict(torch.load(mp_fn))
     loss_func = nn.MSELoss()
@@ -171,9 +182,4 @@ def write(fn, content, mode='w'):
 
 if __name__ == '__main__':
     # train()
-    # test()
-    # HIDDEN_NODES = [100, 100, 80, 50, 20]
-    # a = DNN(n_feature=74, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True)
-    # print(len(list(a.parameters())))
-    # train()
-    test()
+    ttest()
