@@ -85,8 +85,8 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
     else:
         os.mkdir(save_dir)
     
-    train_csv_fn = r'G:\ztml\ztml\data\train_data_from_normalized_data.csv'
-    test_csv_fn = r'G:\ztml\ztml\data\test_data_from_normalized_data.csv'
+    train_csv_fn = r'..\\data\\train_30_train.csv'
+    test_csv_fn = r'..\\data\\train_30_test.csv'
     train_pmdata_loader = load_pmdata(csv_file=train_csv_fn, shuffle=True, zt=zt, batch_size=588)
     test_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=True, zt=zt, batch_size=252)
     
@@ -160,9 +160,9 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
                     torch.save(dnn.state_dict(), os.path.join(save_dir, 'dnn_params_%d_%s.pkl' % (epoch, label)))
 
 
-def ttest(mp_fn=r'training_module/dnn_params_10000.pkl', save_dir='', n_feature=34, HIDDEN_NODES=[100, 50, 50, 20]):
+def ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34, HIDDEN_NODES=[100, 50, 50, 20]):
     # csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
-    test_csv_fn = r'G:\ztml\ztml\data\test_data_from_normalized_data.csv'
+    # test_csv_fn = r'G:\ztml\ztml\data\test_data_from_normalized_data.csv'
     train_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=True, batch_size=252)
 
     dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True)
@@ -179,7 +179,7 @@ def ttest(mp_fn=r'training_module/dnn_params_10000.pkl', save_dir='', n_feature=
         loss = loss_func(output, label_y.float())
         # print('loss: ', loss.data.numpy(), 'label_y: ', label_y.data.numpy(), 'predict_y: ', output.data.numpy())
         print('loss: ', loss.data.numpy())
-        with open(os.path.join(save_dir, "results.out"), 'w') as f:
+        with open(os.path.join(save_dir, output_fn), 'w') as f:
             for i in range(len(label_y.data.numpy())):
                 f.write("%.7f     %.7f\n" % (label_y.data.numpy()[i][0], output.data.numpy()[i][0]) )
                 print(label_y.data.numpy()[i][0], '   ', output.data.numpy()[i][0])
@@ -195,7 +195,9 @@ def write(fn, content, mode='w'):
 
 if __name__ == '__main__':
     save_dir = 'training_module'
-    nfeature = 34
+    nfeature = 27
     hidden_layer = [100, 50, 50, 20]
-    train(cuda=True, save_dir=save_dir, label='run1', n_feature=nfeature, HIDDEN_NODES=hidden_layer)
-    # ttest(mp_fn=os.path.join(save_dir, 'dnn_params_1000_2021_06_09_16_53_29.694827.pkl'), save_dir=save_dir,  n_feature=nfeature, HIDDEN_NODES=hidden_layer)
+    label = 'run3'
+    # train(cuda=False, save_dir=save_dir, label=label', n_feature=nfeature, HIDDEN_NODES=hidden_layer)
+    ttest(test_csv_fn=r"..\\data\\valid_40.csv", mp_fn=os.path.join(save_dir, 'dnn_params_10000_run3.pkl'),
+          output_fn='out_%s.valid' % label, save_dir=save_dir,  n_feature=nfeature, HIDDEN_NODES=hidden_layer)

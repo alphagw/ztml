@@ -53,8 +53,7 @@ def run_mse():
     plt_mse(dd)
 
 
-def plt_result():
-    fn = r"training_module/results.out"
+def plt_result(fn, ofn):
     with open(fn, 'r') as f:
         data = np.array([i.split() for i in f.readlines()[1:]], dtype=np.float)
     actual = data[:, 0]
@@ -71,8 +70,11 @@ def plt_result():
     plt.ylabel("Predicted")
     # plt.xticks([])
     # plt.yticks([])
-    plt.savefig('1.pdf')
+    plt.savefig(ofn)
 
 
 if __name__ == '__main__':
-    plt_result()
+    # fn, ofn = r"training_module/out_run3.train", 'train.pdf'
+    # fn, ofn = r"training_module/out_run3.test", 'test.pdf'
+    fn, ofn = r"training_module/out_run3.valid", 'valid.pdf'
+    plt_result(fn, ofn)
