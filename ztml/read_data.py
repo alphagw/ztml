@@ -34,7 +34,7 @@ class PmData(Dataset):
         return len(self.data)
 
 
-def load_pmdata(csv_file, batch_size=840, shuffle=True, zt=True):
+def load_pmdata(csv_file, batch_size=588, shuffle=True, zt=True):
     pmdata = PmData(csv_file, zt=zt)
     train_loader = Data.DataLoader(dataset=pmdata, batch_size=batch_size, shuffle=shuffle)
     return train_loader
