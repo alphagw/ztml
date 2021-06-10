@@ -12,12 +12,13 @@ __date__ = '2021/06/9 15:07:24'
 
 import pandas as pd
 import numpy as np
-from ztml.data.run_rm_correlation_plt import auto_get_corelated_group
+from ztml.data.plt_run_rm_correlation import auto_get_corelated_group
 import matplotlib.pyplot as plt
 
 
 def read_data():
-    csv_file = r'G:\ztml\ztml\data\clean_data.csv'
+    # csv_file = r'G:\ztml\ztml\data\clean_data.csv'
+    csv_file = r'G:\ztml\ztml\data\1.csv'
     data = pd.read_csv(csv_file)
     return data
 
@@ -45,31 +46,39 @@ def normalize(data):
     return dd
 
 
-def run():
-    data = read_data()
-    column = data.columns.values.tolist()[:-2]
-    train_data = data.values[:, :-2]
-    a = np.corrcoef(train_data, rowvar=0)
-    b = np.triu(a)
-    gp = auto_get_corelated_group(data=b, coref_val=0.85, is_triu=True, get_remove=True)
-    print(len(gp[1]))
-    for i in sorted(gp[1], reverse=True):
-        column.pop(i)
+def get_normalize_data(data, gogal_column=None):
     
-    feature = data[column]
+    if gogal_column is not None:
+        pass
+    else:
+        column = data.columns.values.tolist()[:-2]
+        train_data = data.values[:, :-2]
+        a = np.corrcoef(train_data, rowvar=0)
+        b = np.abs(np.triu(a))
+        gp = auto_get_corelated_group(data=b, coref_val=0.85, is_triu=True, get_remove=True)
+        print('corelated column:', len(gp[1]))
+        for i in sorted(gp[1], reverse=True):
+            column.pop(i)
+        gogal_column = column
+        
+    feature = data[gogal_column]
     ffe = normalize(feature.values)
-    
+    print(gogal_column)
+    print("final column: ", len(gogal_column))
     # plt_each_dis(ffe, 'nor.pdf')
     # plt_each_dis(feature.values, '0.pdf')
-    column.append(data.columns.values.tolist()[-2])
-    column.append(data.columns.values.tolist()[-1])
+    gogal_column.append(data.columns.values.tolist()[-2])
+    gogal_column.append(data.columns.values.tolist()[-1])
+    
+    label = data[gogal_column[-2:]]
+    
+    return pd.DataFrame(np.hstack((ffe, label)), columns=gogal_column), gogal_column[:-2]
+    
 
-    label = data[column[-2:]]
-    
-    now_data = np.hstack((ffe, label))
-    
-    pd.DataFrame(now_data, columns=column).to_csv('clean_data_normalized.csv')
-    return ffe, label
+def run():
+    data = read_data()
+    now_data, _ = get_normalize_data(data)
+    now_data.to_csv('clean_data_normalized.csv')
     
     
 if __name__ == '__main__':
