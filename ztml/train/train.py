@@ -78,7 +78,7 @@ def do_time():
 
 
 def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True, save_dir='', zt=True, label='1',
-          n_feature = 34, HIDDEN_NODES = [100, 50, 50, 20]):
+          n_feature = 34, HIDDEN_NODES = [100, 50, 50, 20], activation=nn.ReLU()):
     
     if os.path.isdir(save_dir):
         pass
@@ -91,21 +91,22 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
     test_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=True, zt=zt, batch_size=252)
     
     if cuda:
-        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True).cuda()
+        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True, activation=activation).cuda()
     else:
-        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True)
+        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True, activation=activation)
     
     if restore:
         dnn.load_state_dict(torch.load(module_params_fn))
     print(dnn)
     # dnn = DNN(660, 1000, 4)
-    optimizer = torch.optim.Adam(dnn.parameters(), lr)  # weight_decay=0.01
+    # optimizer = torch.optim.Adam(dnn.parameters(), lr)  # weight_decay=0.01
+    optimizer = torch.optim.SGD(dnn.parameters(), lr)
     loss_func = nn.MSELoss()
     # l1_crit = nn.L1Loss(size_average=False)
     # reg_loss = 0
     # for param in dnn.parameters():
     #     reg_loss += l1_crit(param, 100)
-    tfn = os.path.join(save_dir, 'running_%s_%s.log' % (label, do_time()))
+    tfn = os.path.join(save_dir, 'running_%s.log' % label)
 
     for ep in range(epoch):
         epoch = ep + 1
@@ -160,12 +161,13 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
                     torch.save(dnn.state_dict(), os.path.join(save_dir, 'dnn_params_%d_%s.pkl' % (epoch, label)))
 
 
-def ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34, HIDDEN_NODES=[100, 50, 50, 20]):
+def ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34,
+          HIDDEN_NODES=[100, 50, 50, 20], activation=nn.ReLU(), batch_size=252):
     # csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
     # test_csv_fn = r'G:\ztml\ztml\data\test_data_from_normalized_data.csv'
-    train_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=True, batch_size=252)
+    train_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=True, batch_size=batch_size)
 
-    dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True)
+    dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True, activation=activation)
 
     dnn.load_state_dict(torch.load(mp_fn))
     loss_func = nn.MSELoss()
@@ -196,8 +198,15 @@ def write(fn, content, mode='w'):
 if __name__ == '__main__':
     save_dir = 'training_module'
     nfeature = 27
-    hidden_layer = [100, 50, 50, 20]
-    label = 'run3'
-    # train(cuda=False, save_dir=save_dir, label=label', n_feature=nfeature, HIDDEN_NODES=hidden_layer)
-    ttest(test_csv_fn=r"..\\data\\valid_40.csv", mp_fn=os.path.join(save_dir, 'dnn_params_10000_run3.pkl'),
-          output_fn='out_%s.valid' % label, save_dir=save_dir,  n_feature=nfeature, HIDDEN_NODES=hidden_layer)
+    hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
+    epoch = 5000
+    label = '3layer_100' # '3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
+    activation = nn.ReLU()
+    # train(cuda=False, epoch=epoch, save_dir=save_dir, label=label, n_feature=nfeature, HIDDEN_NODES=hidden_layer, activation=activation)
+    # exit()
+
+    for i in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
+        ttest(test_csv_fn=os.path.join(r'..\\data', i),
+              mp_fn=os.path.join(save_dir, 'dnn_params_5000_%s.pkl'%label),
+              output_fn='result_%s_%s.out' % (i, label), activation=activation,
+              save_dir=save_dir,  n_feature=nfeature, HIDDEN_NODES=hidden_layer)
