@@ -46,7 +46,7 @@ def get_train_test_index(data, column_index, ratio, to_data=False):
     :return: 训练集和测试集的索引 或者 训练集和测试集数据
     """
     dd = data.groupby(column_index)
-    np.random.seed(27)
+    np.random.seed(30)
     test_index = []
     for i, j in dd.groups.items():
         d = j[norepeat_randint(j, ratio=ratio)]

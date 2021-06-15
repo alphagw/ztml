@@ -15,7 +15,6 @@ from ztml.data.clean_csv_data import get_clean_data, read_data
 from ztml.data.feature_normalize_data import get_normalize_data
 from ztml.data.rename_cloumn import get_rename_column_data
 from ztml.data.split_tran_and_test import split_to_train2test
-import os
 
 
 def run(fn):
@@ -24,9 +23,9 @@ def run(fn):
     rename_data = get_rename_column_data(origin_data)
     # train_data, test_data = get_train_test_index(rename_data, column_index=['N_atom_unit'], ratio=0.575, to_data=True)
     
-    # 获取重命名后的clean_data
-    tmp_file = 'temp_clean_data.csv'
+    # 添加12个温度参数，并将所有温度对应的Kpa，N，ZT三个值添加上, 将70组数据扩展为840组数据
     clean_train_data = get_clean_data(rename_data)
+    tmp_file = 'temp_clean_data.csv'
     clean_train_data.to_csv(tmp_file, index=False)
     clean_train_data = read_data(tmp_file)
     # os.remove(tmp_file)
@@ -41,8 +40,9 @@ def run(fn):
     train_train_data, train_test_data = split_to_train2test(use2train_data, ratio=0.318)
     print(train_train_data.shape, train_test_data.shape)
     # 微调训练集和测试集数据大小
-    dtrain_train_data = train_train_data[:-2]
-    dtrain_test_data = train_test_data.append(train_train_data[-2:], ignore_index=True)
+    _rm_nlarge = -1
+    dtrain_train_data = train_train_data[:_rm_nlarge]
+    dtrain_test_data = train_test_data.append(train_train_data[_rm_nlarge:], ignore_index=True)
     print(dtrain_train_data.shape, dtrain_test_data.shape)
     
     # 输出数据

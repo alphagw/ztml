@@ -28,7 +28,7 @@ def change_valence(data):
 def get_new_columns_label(data, is_write=False, fn="all_change_column.log"):
     aa = data.columns.get_values()
     re_name = ['_'.join(i.replace('(', ' ').replace('*', ' ').replace('.', ' ').replace(')', ' ').replace('-', ' ')
-                        .replace('/', ' ').split()) for i in aa]
+                        .replace('/', ' ').split()) if not str(i).startswith('-') else i for i in aa ]
     
     re_name[re_name.index("K_cal_100K")] = "100_K"
     re_name[re_name.index("N_optimal_1e20_cm_3__100K")] = "100_K_1"
@@ -58,7 +58,7 @@ def get_rename_column_data(data):
     valed_data = change_valence(data)
     
     # 获取每一列旧名称对应的新名称
-    new_label = get_new_columns_label(valed_data, is_write=False, fn=r"data\\all_change_column.log")
+    new_label = get_new_columns_label(valed_data, is_write=True, fn=r".\all_change_column.log")
     # 实际改变每一列的新名称
     new_data = change_columns(valed_data, new_label)
     return new_data

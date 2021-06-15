@@ -59,7 +59,23 @@ def get_clean_data(new_data):
     
     # 将P类型还是N类型半导体改成数值类型 P型：0  N型：1
     fdata = change_np(add_t_data)
-    return fdata
+    
+    # 将Type列放置到倒数第2列，删除N_optimal列
+    columns = fdata.columns.tolist()
+    columns.insert(-1, columns.pop(columns.index('Type')))
+    new_pf = pd.DataFrame(fdata, columns=columns)
+    # print(fdata)
+    #
+    # data = fdata['N_optimal']
+    # import numpy as np
+    #
+    # data = sorted(data.tolist())
+    # print(np.max(data))
+    # print(np.min(data))
+    # print(np.mean(data))
+    # print(np.median(data))
+    # exit()
+    return new_pf
 
 
 def write(fdata, gfn):

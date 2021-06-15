@@ -12,7 +12,7 @@ __date__ = '2021/06/9 15:07:24'
 
 import pandas as pd
 import numpy as np
-from ztml.data.plt_run_rm_correlation import auto_get_corelated_group
+from ztml.tools import auto_get_corelated_group
 import matplotlib.pyplot as plt
 
 

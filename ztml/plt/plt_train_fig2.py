@@ -66,7 +66,7 @@ def run_mse(fn, outfn):
 
 
 def plt_result(predict_data, training_data, text=None, save_fn=None, show=False):
-    pindex = ['(a)', '(b)', '(c)', '(d)', '(e)', '(f)']
+    pindex = ['A', 'B', 'C', 'D', 'E', 'F']
     _xwd, _ywd = 0.125, 0.12
     sax = [[0.18098039215686275 + 0.010, 0.60, _xwd, _ywd],
            [0.49450980392156866 + 0.025, 0.60, _xwd, _ywd],
@@ -96,7 +96,7 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         ax.set_xlabel("Calculated")
         ax.set_ylabel("Predicted")
         ax.text(0.2, 1.0, text[i])
-        ax.text(-0.175, 1.2, pindex[i], fontsize=12)
+        ax.text(0.01, 1.3, pindex[i], fontsize=16)
         d = ax.get_position()
         print(i, d)
         tdata = training_data[i][1:, :]
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     # fn, ofn = r"training_module/out_run3.train", 'train.pdf'
     # fn, ofn = r"training_module/out_run3.test", 'test.pdf'
     label = 'run1'
-    save_dir = r'.\training_module'
+    save_dir = r'..\train\training_module'
     # run_mse(os.path.join(save_dir, 'running_%s.log' % label), 'training_%s.pdf' % label)
     text = ["Activation      : Relu\nOptimizer      : Adam\nHiddenLayers: [100, 50, 20]",
             "Activation      : Sigmod\nOptimizer      : Adam\nHiddenLayers: [100, 50, 20]",
@@ -155,7 +155,7 @@ if __name__ == '__main__':
             output_fn = os.path.join(save_dir, 'result_%s_%s.out' % (i, label))
             predict_data.append(read_cal_predit(output_fn))
         
-        save_fn = 'plt_%s.pdf' % i
+        save_fn = 'plt_%s_fig2.pdf' % i
         plt_result(predict_data, training_data, text, save_fn=save_fn, show=False)
             
-        # exit()
+        exit()
