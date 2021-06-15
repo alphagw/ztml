@@ -27,19 +27,21 @@ def read_data_for_plt(fn):
 
 
 def plt_fig1():
-    label_font_size = 12
-    ab_index_fontsize = 16
+    label_font = {"fontsize": 14}
+    index_label_font = {"fontsize": 18, 'weight': 'bold'}
+    tick_font_size = 14
     
     fig = plt.figure(figsize=(18, 8))
     ax = plt.subplot2grid((1, 22), (0, 0), colspan=10, rowspan=1, fig=fig)
     ax2 = plt.subplot2grid((1, 22), (0, 10), colspan=1, rowspan=1,fig=fig)
+    ax2.tick_params(axis='both', labelsize=tick_font_size)
     ax3 = plt.subplot2grid((1, 22), (0, 12), colspan=10, rowspan=1, fig=fig)
 
 
     csv_file = r'G:\ztml\ztml\data\temp_clean_data.csv'
     dd, column = read_data_for_plt(csv_file)
     
-    _ = sns.heatmap(dd, vmin=-1, vmax=1, cmap='coolwarm', ax=ax, cbar_ax=ax2)
+    _ = sns.heatmap(dd, vmin=-1, vmax=1, cmap='coolwarm', ax=ax, cbar_ax=ax2, cbar_kws={"ticks": np.array([1, 0, -1])})
     ax.set_xticks(np.array(range(0, len(column))))
     ax.set_xlim(0, len(column))
     ax.set_xticks(np.array(range(0, len(column))) + 0.5, minor=True)
@@ -50,9 +52,9 @@ def plt_fig1():
     
     ax.set_xticklabels([])
     ax.set_yticklabels([])
-    ax.set_xticklabels([column[i][:5] if i % 2 == 0 else None for i in range(len(column))], fontsize=label_font_size, minor=True,
+    ax.set_xticklabels([column[i][:5] if i % 2 == 0 else None for i in range(len(column))], fontdict=label_font, minor=True,
                        rotation=85)
-    ax.set_yticklabels([column[i][:5] if i % 2 == 0 else None for i in range(len(column))], fontsize=label_font_size,
+    ax.set_yticklabels([column[i][:5] if i % 2 == 0 else None for i in range(len(column))], fontdict=label_font,
                        minor=True)  # va='center_baseline',
     # import matplotlib.transforms as mtrans
     # for i in ax.get_xticklabels():
@@ -66,7 +68,7 @@ def plt_fig1():
     ax.tick_params(axis='x', direction='out', labelrotation=85, length=0.00001)
     ax.tick_params(axis='y', direction='out', labelrotation=0, length=0.00001)
     # ax.tick_params(axis='y', labelrotation=-45)
-    ax.text(1, 66, 'A', fontsize=ab_index_fontsize)
+    ax.text(1, 66, 'A', fontdict=index_label_font)
     
     csv_file = r'G:\ztml\ztml\data\normalized_data.csv'
     dd, column = read_data_for_plt(csv_file)
@@ -82,8 +84,8 @@ def plt_fig1():
 
     ax3.set_xticklabels([])
     ax3.set_yticklabels([])
-    ax3.set_xticklabels([i[:5] for i in column], fontsize=label_font_size, minor=True, rotation=85)
-    ax3.set_yticklabels([i[:5] for i in column], fontsize=label_font_size, minor=True)  # va='center_baseline',
+    ax3.set_xticklabels([i[:5] for i in column], fontdict=label_font, minor=True, rotation=85)
+    ax3.set_yticklabels([i[:5] for i in column], fontdict=label_font, minor=True)  # va='center_baseline',
     # import matplotlib.transforms as mtrans
     # for i in ax.get_xticklabels():
     #     i.set_transform(i.get_transform() + mtrans.Affine2D().translate(5.5, 10))
@@ -95,11 +97,11 @@ def plt_fig1():
     #
     ax3.tick_params(axis='x', direction='out', labelrotation=85, length=0.00001)
     ax3.tick_params(axis='y', direction='out', labelrotation=0, length=0.00001)
-    ax3.text(0.5, 28.3, 'B', fontsize=ab_index_fontsize)
+    ax3.text(0.5, 28.3, 'B', fontdict=index_label_font)
 
     # plt.savefig('plt_coref_fig1.pdf')
     plt.tight_layout()
-    plt.subplots_adjust(left=0.05, bottom=0.1, top=0.95, right=0.98, wspace=0.7)
+    plt.subplots_adjust(left=0.05, bottom=0.1, top=0.95, right=0.98, wspace=1)
     # plt.show()
     plt.savefig('plt_coref_fig1.pdf')
 

@@ -66,14 +66,18 @@ def run_mse(fn, outfn):
 
 
 def plt_result(predict_data, training_data, text=None, save_fn=None, show=False):
+    label_font = {"fontsize": 14}
+    legend_font = {"fontsize": 12}
+    tick_font_size = 12
+    index_label_font = {"fontsize": 18, 'weight': 'bold'}
     pindex = ['A', 'B', 'C', 'D', 'E', 'F']
-    _xwd, _ywd = 0.125, 0.12
-    sax = [[0.18098039215686275 + 0.010, 0.60, _xwd, _ywd],
-           [0.49450980392156866 + 0.025, 0.60, _xwd, _ywd],
-           [0.82803921568627460 + 0.025, 0.60, _xwd, _ywd],
-           [0.18098039215686275 + 0.010, 0.11, _xwd, _ywd],
-           [0.49450980392156866 + 0.025, 0.11, _xwd, _ywd],
-           [0.82803921568627460 + 0.025, 0.11, _xwd, _ywd]]
+    _xwd, _ywd = 0.118, 0.12
+    sax = [[0.18098039215686275 + 0.020, 0.60, _xwd, _ywd],
+           [0.49450980392156866 + 0.035, 0.60, _xwd, _ywd],
+           [0.82803921568627460 + 0.035, 0.60, _xwd, _ywd],
+           [0.18098039215686275 + 0.020, 0.11, _xwd, _ywd],
+           [0.49450980392156866 + 0.035, 0.11, _xwd, _ywd],
+           [0.82803921568627460 + 0.035, 0.11, _xwd, _ywd]]
 
     nrow = 2
     ncol = 3
@@ -93,10 +97,15 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         ax.plot(_tmp_xy, _tmp_xy, '#F37878', linewidth=3, alpha=0.8)
         ax.set_xlim(slice_set)
         ax.set_ylim(slice_set)
-        ax.set_xlabel("Calculated")
-        ax.set_ylabel("Predicted")
-        ax.text(0.2, 1.0, text[i])
-        ax.text(0.01, 1.3, pindex[i], fontsize=16)
+        ax.set_xlabel("Calculated", fontdict=label_font)
+        ax.set_ylabel("Predicted", fontdict=label_font)
+        if i > 3:
+            ax.text(0.1, 1.0, text[i], fontdict=legend_font)
+        else:
+            ax.text(0.2, 1.0, text[i], fontdict=legend_font)
+
+        ax.text(0.01, 1.3, pindex[i], fontdict=index_label_font)
+        ax.tick_params(axis='both', labelsize=tick_font_size)
         d = ax.get_position()
         print(i, d)
         tdata = training_data[i][1:, :]
@@ -111,22 +120,40 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         if i == 3:
             left = left + 0.017
             width = width - 0.01
-            
+            train_final_mean = np.mean(ytrain[8000:])
+            test_final_mean = np.mean(ytest[8000:])
+        else:
+            left = left
+            width = width
+            train_final_mean = np.mean(ytrain[2500:])
+            test_final_mean = np.mean(ytest[2500:])
+
         ax2 = fig.add_axes([left, bottom, width, height])
         ax2.plot(tx, ytrain, c='#347FE2', linewidth=1.2, label='train')
         ax2.plot(tx, ytest, c='#F37878', linewidth=1.2, label='test')
         if i == 3:
+            ax2.set_xlim(-120, 8000)
             ax2.set_ylim(-0.001, 0.2)
+            ax2.text(2000, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
+
+        elif i == 2:
+            ax2.set_xlim(-120, 3000)
+            ax2.set_ylim(-0.001, 0.08)
+            ax2.text(1000, 0.02, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
         else:
+            ax2.set_xlim(-120, 3000)
             ax2.set_ylim(-0.001, 0.04)
-       
-        ax2.set_xlim(-120, 3000)
+            ax2.text(1000, 0.01, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
+
+        
+        ax2.set_ylabel('MSE')
+        # ax2.set_xlabel('Steps')
         ax2.legend(fontsize=8)
         # plt.xticks([])
         # plt.yticks([])
-        
-    if save_fn is not None:
         plt.tight_layout()
+
+    if save_fn is not None:
         plt.savefig(save_fn)
         
     if show:

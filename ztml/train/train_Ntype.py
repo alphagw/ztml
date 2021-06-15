@@ -67,7 +67,8 @@ class DNN(nn.Module):
         
         x = self.predict(x)
         return x
-
+        
+        
 def adjust_learning_rate(optimizer, lr):
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
@@ -77,8 +78,8 @@ def do_time():
     return now_time().replace(' ', '_').replace('-', '_').replace(':', '_')
 
 
-def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True, save_dir='', zt=True, label='1',
-          n_feature = 34, HIDDEN_NODES = [100, 50, 50, 20], activation=nn.ReLU(), optimizer='Adam'):
+def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True, save_dir='', zt=False, label='1',
+          n_feature = 34, HIDDEN_NODES = [100, 50, 50, 20], activation=nn.ReLU(), optimizer='Adam', n_output=1):
     
     if os.path.isdir(save_dir):
         pass
@@ -91,9 +92,9 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
     test_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=True, zt=zt, batch_size=252)
     
     if cuda:
-        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True, activation=activation).cuda()
+        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=n_output, batch_normalize=True, dropout=True, activation=activation).cuda()
     else:
-        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True, activation=activation)
+        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=n_output, batch_normalize=True, dropout=True, activation=activation)
     
     if restore:
         dnn.load_state_dict(torch.load(module_params_fn))
@@ -106,6 +107,7 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
         optimizer = torch.optim.SGD(dnn.parameters(), lr)
     else:
         raise ValueError("Only support Adam and SGD")
+    # loss_func = nn.Softmax()
     loss_func = nn.MSELoss()
     # l1_crit = nn.L1Loss(size_average=False)
     # reg_loss = 0
@@ -129,6 +131,11 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
             else:
                 b_x, b_y = b_x, b_y
             output = dnn(b_x.float())
+            # for i in range(output.shape[0]):
+            #     if output[i] < 0:
+            #         output[i] = 0
+            #     else:
+            #         output[i] = 1
             label_y = b_y.reshape(-1, 1)
             loss = loss_func(output, label_y.float())  # + 0.005 * reg_loss
 
@@ -166,13 +173,14 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
                     torch.save(dnn.state_dict(), os.path.join(save_dir, 'dnn_params_%d_%s.pkl' % (epoch, label)))
 
 
-def ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34,
-          HIDDEN_NODES=[100, 50, 50, 20], activation=nn.ReLU(), batch_size=252):
+def ntype_ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34,
+          HIDDEN_NODES=[100, 50, 50, 20], activation=nn.ReLU(), batch_size=252, zt=False, n_output=1):
     # csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
     # test_csv_fn = r'G:\ztml\ztml\data\test_data_from_normalized_data.csv'
-    train_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=True, batch_size=batch_size)
+    train_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=True, batch_size=batch_size, zt=zt)
 
-    dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True, activation=activation)
+    dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=n_output, batch_normalize=True, dropout=True,
+              activation=activation)
 
     dnn.load_state_dict(torch.load(mp_fn))
     loss_func = nn.MSELoss()
@@ -202,45 +210,40 @@ def write(fn, content, mode='w'):
 
 
 def run_train():
-    hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
-    epoch = 12000
-    label = '3layer_100_sgd' # '3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
+    hidden_layer = [500, 100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
+    epoch = 5000
+    #'3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
+    label = 'N_type_4layer_500'
     activation = nn.ReLU()
-    optimizer = 'SGD'
+    optimizer = 'Adam'
     train(cuda=True,
           epoch=epoch,
           save_dir=save_dir,
           label=label,
+          zt=False,
           n_feature=nfeature,
           HIDDEN_NODES=hidden_layer,
           activation=activation,
-          optimizer=optimizer)
+          optimizer=optimizer,
+          n_output=1)
 
 
 def run_test():
-    hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
-    label = '3layer_100' # '3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
-    activation = nn.ReLU()
-    
-    label = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
+    label = ['N_type_4layer_500', "3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
     activation = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
     hidden_layer= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
 
     for m in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
-        for i in range(len(label)):
-            nlabel = label[i]
-            nactivation = activation[i]
-            nhidden_layer = hidden_layer[i]
-            
-            nlabel = label[3]
-            nactivation = activation[3]
-            nhidden_layer = hidden_layer[3]
+        
+        nlabel = label[0]
+        nactivation = activation[0]
+        nhidden_layer = hidden_layer[-1]
 
-            ttest(test_csv_fn=os.path.join(r'..\\data', m),
-                  mp_fn=os.path.join(save_dir, 'dnn_params_12000_%s.pkl'%nlabel),
-                  output_fn='result_%s_%s.out' % (m, nlabel), activation=nactivation,
-                  save_dir=save_dir,  n_feature=nfeature, HIDDEN_NODES=nhidden_layer)
-            break
+        ntype_ttest(test_csv_fn=os.path.join(r'..\\data', m),
+              mp_fn=os.path.join(save_dir, 'dnn_params_5000_%s.pkl'%nlabel),
+              output_fn='result_%s_%s.out' % (m, nlabel), activation=nactivation,
+              save_dir=save_dir,  n_feature=nfeature, HIDDEN_NODES=nhidden_layer, zt=False, n_output=1)
+        break
             
 if __name__ == '__main__':
     save_dir = 'training_module'
