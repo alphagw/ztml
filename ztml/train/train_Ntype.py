@@ -173,11 +173,11 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
                     torch.save(dnn.state_dict(), os.path.join(save_dir, 'dnn_params_%d_%s.pkl' % (epoch, label)))
 
 
-def ntype_ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34,
-          HIDDEN_NODES=[100, 50, 50, 20], activation=nn.ReLU(), batch_size=252, zt=False, n_output=1):
+def ntype_ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34, shuffle=False,
+          HIDDEN_NODES=[100, 50, 50, 20], activation=nn.ReLU(), batch_size=252, zt=False, n_output=1, has_t=None):
     # csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
     # test_csv_fn = r'G:\ztml\ztml\data\test_data_from_normalized_data.csv'
-    train_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=True, batch_size=batch_size, zt=zt)
+    train_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=shuffle, batch_size=batch_size, zt=zt)
 
     dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=n_output, batch_normalize=True, dropout=True,
               activation=activation)
@@ -196,7 +196,14 @@ def ntype_ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34,
         print('loss: ', loss.data.numpy())
         with open(os.path.join(save_dir, output_fn), 'w') as f:
             for i in range(len(label_y.data.numpy())):
-                f.write("%.7f     %.7f\n" % (label_y.data.numpy()[i][0], output.data.numpy()[i][0]) )
+                if has_t:
+                    if has_t is not None:
+                        f.write("%.7f     %.7f      %s\n" % (label_y.data.numpy()[i][0], output.data.numpy()[i][0],
+                                                             '  '.join([str(b_x.data.numpy()[i][m]) for m in has_t])))
+                    else:
+                        f.write("%.7f     %.7f\n" % (label_y.data.numpy()[i][0], output.data.numpy()[i][0]))
+                else:
+                    f.write("%.7f     %.7f\n" % (label_y.data.numpy()[i][0], output.data.numpy()[i][0]))
                 print(label_y.data.numpy()[i][0], '   ', output.data.numpy()[i][0])
         
         # if step == 10:
