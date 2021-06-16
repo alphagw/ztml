@@ -136,7 +136,7 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
             ax2.set_ylim(-0.001, 0.2)
             ax2.text(2000, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
 
-        elif i == 2:
+        elif (i == 2) or (i == 1):
             ax2.set_xlim(-120, 3000)
             ax2.set_ylim(-0.001, 0.08)
             ax2.text(1000, 0.02, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
@@ -183,6 +183,7 @@ if __name__ == '__main__':
             predict_data.append(read_cal_predit(output_fn))
         
         save_fn = 'plt_%s_fig2.pdf' % i
+        # plt_result(predict_data, training_data, text, save_fn=None, show=True)
         plt_result(predict_data, training_data, text, save_fn=save_fn, show=False)
-            
+
         exit()

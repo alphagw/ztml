@@ -62,6 +62,36 @@ def get_train_test_index(data, column_index, ratio, to_data=False):
         return train_index, test_index
 
 
+def get_random_groupby_index(data, column_index, ratio, to_data=False):
+    """
+    读取csv数据，根据指定列先分组，并在将每一组都分成训练集和测试集，返回测试集的索引
+    :param data
+    :param column_index: 列表，列名构成的列表
+    :param ratio: 测试集比例
+    :param retrun_data: 决定返回数据还是索引
+    :return: 训练集和测试集的索引 或者 训练集和测试集数据
+    """
+    dd = data.groupby(column_index)
+    np.random.seed(30)
+    # _tmp = list(dd.groups.keys())
+    train_index = norepeat_randint(range(len(dd.groups)), ratio=ratio)
+    test_index, test_data, train_data = [], [], []
+    for j, (m, n) in enumerate(dd.groups.items()):
+        if j in train_index:
+            test_data.append(data.loc[dd.groups[m]])
+        else:
+            test_index.append(j)
+            train_data.append(data.loc[dd.groups[m]])
+            
+    train_data = pd.concat(train_data, ignore_index=True, copy=True)
+    test_data = pd.concat(test_data, ignore_index=True, copy=True)
+    
+    if to_data:
+        return train_data, test_data
+    else:
+        return train_index, test_index
+
+
 def method2(index_final):
     lindex_final = list(index_final.tolist())
     final_d = []

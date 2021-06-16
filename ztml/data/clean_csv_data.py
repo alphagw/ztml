@@ -45,7 +45,7 @@ def add_tempeture(data):
 
 
 def change_np(data):
-    _tt = {"p": 0, "N": 1, "P": 0, "n": 1}
+    _tt = {"p": 1, "N": 0, "P": 1, "n": 0}
 
     for i in data.index.tolist():
         data.loc[i, 'Type'] = _tt[data['Type'][i].strip()]

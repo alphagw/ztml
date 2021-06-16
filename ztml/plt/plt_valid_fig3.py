@@ -10,10 +10,11 @@ __maintainer__ = 'Guanjie Wang'
 __email__ = "gjwang@buaa.edu.cn"
 __date__ = '2021/05/25 09:01:54'
 
-import numpy as np
-import matplotlib.pyplot as plt
 import os
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from copy import deepcopy
 from ztml.plt.plt_train_fig2 import read_cal_predit
 
 
@@ -26,7 +27,14 @@ aa = lambda x: 0.05 if x < 0.5 else 0.95
 
 
 def plt_predict_cal(fn, fn2, ntype1, ntype2):
-    
+    # 处理 BGPa对应的 元素名称
+    __tmp_ori = pd.read_csv(os.path.join(r'../data', '0-20201203_descriptors.csv'))
+    _tcl = __tmp_ori.columns.values
+    __tmp_ori1 = __tmp_ori[_tcl[0]].values
+    __tmp_ori2 = __tmp_ori[_tcl[37]].values
+    __tmp_ori2 = [round(i, 5) for i in (__tmp_ori2 - np.min(__tmp_ori2)) /(np.max(__tmp_ori2) - np.min(__tmp_ori2))]
+    origin_data = dict(zip(__tmp_ori2, __tmp_ori1))
+
     label_font = {"fontsize": 16}
     tick_font_size = 14
     index_label_font = {"fontsize": 18, 'weight': 'bold'}
@@ -35,8 +43,10 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
     npd1 = read_cal_predit(ntype1)
     ax0 = plt.subplot2grid((12, 2), (0, 0), colspan=1, rowspan=2)
     for i in range(npd1.shape[0]):
+        symbol = origin_data[round(npd1[i][-1], 5)]
         ax0.scatter(i, npd1[i][0], edgecolors='white',color='#3CAF6F', alpha=0.8, linewidths=0.2, s=90)
         ax0.scatter(i, aa(npd1[i][1]), edgecolors='white',color='darkorange',alpha=0.8, linewidths=0.2, s=90)
+        
     ax0.set_xlim(-2, 122)
     ax0.set_ylim(-0.2, 1.2)
     colors = {'Calculated': '#3CAF6F', 'Predicted': 'darkorange'}
@@ -48,7 +58,7 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
     ax0.set_yticks([0, 1])
     ax0.set_yticklabels(['N-type', 'P-type'])
     ax0.tick_params(labelsize=tick_font_size)
-    ax0.set_xlabel("The number of compound", fontdict=label_font)
+    ax0.set_xlabel("Index of compounds", fontdict=label_font)
     
     ax = plt.subplot2grid((12, 2), (3, 0), colspan=1, rowspan=9)
     # fig, axes = plt.subplots(3, 2, figsize=(16, 8))
@@ -92,7 +102,7 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
     new_data = pd.DataFrame(__dd, columns=['CZT', 'PZT', 'T', 'N3', "V1", "CN", "PN"], index=None)
     split_data = new_data.groupby(['N3'])
     dd = []
-    txt_label = ['GST124', 'GST147', 'GST225', 'GST326']
+    txt_label = ['ABC124', 'ABC147', 'ABC225', 'ABC326']
     for i, j in split_data.groups.items():
         dd.append(new_data.loc[j])
     # print(split_data)
@@ -102,7 +112,6 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
     def get_color(data):
         return ['#F37878' if data[i] < 0.5 else '#347FE2' for i in range(data.shape[0])]
     
-    from copy import deepcopy
     for i in range(len(txt_label)):
         ax2 = plt.subplot2grid((12, 2), (3*i, 1), colspan=1, rowspan=3)
         _tsd = deepcopy(dd[i])
@@ -118,36 +127,49 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
         zt_val = fdd[:]['PZT'].values
         ntype_val = fdd[:]['PN'].values
         _colors = get_color(ntype_val)
-        t = fdd[:]['T'].values / 2 + 0.5
+        bgp = fdd[:]['V1'].values
+        t = fdd[:]['T'].values
+        alphat = t / 2 + 0.5
+        _t_label_index, _t_label = [], []
         for xx in range(fdd.shape[0]):
-            ax2.bar(xx, zt_val[xx], width=width, color=_colors[xx], alpha=t[xx])
-        
+            symbol = origin_data[round(bgp[xx], 5)]
+            # if symbol == 'SnSbSe':
+            #     print(round(bgp[xx], 5))
+            #     exit()
+            if round(t[xx], 5) == round(0.4545454545454545, 5):
+                _t_label_index.append(xx)
+                _t_label.append(symbol)
+            ax2.bar(xx, zt_val[xx], width=width, color=_colors[xx], alpha=alphat[xx])
+            # ax2.bar(xx, zt_val[xx], width=width, color=_colors[xx], alpha=1)
+
         ax2.set_xlim(-1, len(fdd))
-        ax2.set_ylim(0, 0.99)
-        
-        ax2.tick_params(axis='both', labelsize=tick_font_size)
-        if i != 2:
-            ax2.text(18, 0.85, txt_label[i], fontdict=label_font)
+        ax2.set_xticks(_t_label_index)
+        ax2.set_xticklabels(_t_label)
+        ax2.set_ylim(0, 1.1)
+
+        if i == 1:
+            ax2.tick_params(axis='x', labelsize=tick_font_size-3)
+            ax2.tick_params(axis='y', labelsize=tick_font_size)
         else:
-            ax2.text(12, 0.85, txt_label[i], fontdict=label_font)
+            ax2.tick_params(axis='both', labelsize=tick_font_size)
 
         if i == 0:
-            ax2.text(0, 1.03, 'C', fontdict=index_label_font)
+            ax2.text(0, 1.13, 'C', fontdict=index_label_font)
             colors = {'N-type': '#F37878', 'P-type': '#347FE2'}
             labels = list(colors.keys())
             handles = [plt.Rectangle((0, 0), 1, 1, color=colors[label]) for label in labels]
             ax2.legend(handles, labels, ncol=2, loc='upper right')
-
+        
         if i == 2:
+            ax2.text(0, 0.85, txt_label[i], fontdict=label_font)
             ax2.set_ylabel("                       The value of ZT predicted "
                            "by Machine learning", fontdict=label_font)
-        
-        if i == 3:
-            ax2.set_xlabel("Index of compounds", fontdict=label_font)
-            ax2.set_xticks([0, 18, 36, 54, 72, 90])
+        else:
+            ax2.text(1, 0.85, txt_label[i], fontdict=label_font)
+
             
     plt.tight_layout()
-    plt.subplots_adjust(left=0.05,bottom=0.08, right=0.98, top=0.95, hspace=0.0, wspace=0.2)
+    plt.subplots_adjust(left=0.05,bottom=0.08, right=0.98, top=0.95, hspace=0.9, wspace=0.2)
     plt.savefig('plt_valid_fig3.pdf', dpi=600)
     # plt.show()
 

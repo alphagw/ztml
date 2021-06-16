@@ -255,5 +255,5 @@ def run_test():
 if __name__ == '__main__':
     save_dir = 'training_module'
     nfeature = 28
-    # run_train()
-    run_test()
+    run_train()
+    # run_test()

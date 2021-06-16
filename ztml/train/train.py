@@ -205,11 +205,16 @@ def write(fn, content, mode='w'):
 
 
 def run_train():
-    hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
-    epoch = 12000
-    label = '3layer_100_sgd' # '3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
+    hidden_layer = [500, 100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
+    epoch = 5000
+    # '3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
+    label = '4layer_500'
     activation = nn.ReLU()
-    optimizer = 'SGD'
+    optimizer = 'Adam'
+    # label = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
+    # activation = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
+    # hidden_layer= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
+    
     train(cuda=True,
           epoch=epoch,
           save_dir=save_dir,
@@ -221,29 +226,26 @@ def run_train():
 
 
 def run_test():
-    hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
-    label = '3layer_100' # '3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
-    activation = nn.ReLU()
     
     label = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
     activation = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
     hidden_layer= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
 
-    for m in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
+    for m in ['train_30_train.csv', 'train_30_test.csv']:
         for i in range(len(label)):
             nlabel = label[i]
             nactivation = activation[i]
             nhidden_layer = hidden_layer[i]
             
-            nlabel = label[3]
-            nactivation = activation[3]
-            nhidden_layer = hidden_layer[3]
-
+            if i == 3:
+                num = 12000
+            else:
+                num = 5000
             ttest(test_csv_fn=os.path.join(r'..\\data', m),
-                  mp_fn=os.path.join(save_dir, 'dnn_params_12000_%s.pkl'%nlabel),
+                  mp_fn=os.path.join(save_dir, 'dnn_params_%d_%s.pkl'%(num, nlabel)),
                   output_fn='result_%s_%s.out' % (m, nlabel), activation=nactivation,
                   save_dir=save_dir,  n_feature=nfeature, HIDDEN_NODES=nhidden_layer)
-            break
+            
             
 if __name__ == '__main__':
     save_dir = 'training_module'
