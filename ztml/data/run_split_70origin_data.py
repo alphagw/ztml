@@ -52,6 +52,16 @@ def run(fn):
     use2valid_data.to_csv('valid_40.csv', index=False)
 
 
+def read_rename_clean_datafile():
+    tmp_file = 'temp_clean_data.csv'
+    clean_train_data = read_data(tmp_file)
+    # os.remove(tmp_file)
+    
+    # 获取归一化之后数据，并删除相关列
+    normalized_data, _ = get_normalize_data(clean_train_data)
+    normalized_data.to_csv('normalized_data.csv', index=False)
+
+
 def run_compounds_split(fn):
     # 重命名每一列
     origin_data = read_data(fn)
@@ -92,4 +102,5 @@ def run_compounds_split(fn):
 if __name__ == '__main__':
     file_name = r'0-20201203_descriptors.csv'
     # run(file_name)
-    run_compounds_split(file_name)
+    # run_compounds_split(file_name)
+    read_rename_clean_datafile()
