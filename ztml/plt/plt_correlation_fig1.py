@@ -27,11 +27,12 @@ def read_data_for_plt(fn):
 
 
 def plt_fig1():
-    label_font = {"fontsize": 14}
-    index_label_font = {"fontsize": 18, 'weight': 'bold'}
+    label_font = {"fontsize": 14, 'family': 'Times New Roman'}
+    index_label_font = {"fontsize": 20, 'weight': 'bold', 'family': 'Times New Roman'}
     tick_font_size = 14
     
     fig = plt.figure(figsize=(18, 8))
+    plt.rc('font', family='Times New Roman', weight='normal')
     ax = plt.subplot2grid((1, 22), (0, 0), colspan=10, rowspan=1, fig=fig)
     ax2 = plt.subplot2grid((1, 22), (0, 10), colspan=1, rowspan=1,fig=fig)
     ax2.tick_params(axis='both', labelsize=tick_font_size)
@@ -39,8 +40,23 @@ def plt_fig1():
 
 
     csv_file = r'G:\ztml\ztml\data\temp_clean_data.csv'
-    dd, column = read_data_for_plt(csv_file)
+    dd, columns = read_data_for_plt(csv_file)
     
+    column = []
+    for nn in columns:
+        if str(nn).startswith('K') or str(nn).startswith('k'):
+            _label = r'$\kappa_{%s}$' % nn[1:]
+        elif str(nn).startswith('r') or str(nn).startswith('R') or str(nn).startswith('n') or str(nn).startswith('m'):
+            _label = r'%s$_{%s}$' % (str(nn[0]).lower(), nn[1:])
+        elif str(nn) == 'a/b':
+            _label = nn
+        elif str(nn) == 'NC.1':
+            nn = "NCo"
+            _label = r'%s$_{%s}$' % (str(nn[0]).upper(), nn[1:])
+        else:
+            _label = r'%s$_{%s}$' % (str(nn[0]).upper(), nn[1:])
+        column.append(_label)
+
     _ = sns.heatmap(dd, vmin=-1, vmax=1, cmap='coolwarm', ax=ax, cbar_ax=ax2, cbar_kws={"ticks": np.array([1, 0, -1])})
     ax.set_xticks(np.array(range(0, len(column))))
     ax.set_xlim(0, len(column))
@@ -52,9 +68,9 @@ def plt_fig1():
     
     ax.set_xticklabels([])
     ax.set_yticklabels([])
-    ax.set_xticklabels([column[i][:5] if i % 2 == 0 else None for i in range(len(column))], fontdict=label_font, minor=True,
+    ax.set_xticklabels([column[i] if i % 2 == 0 else None for i in range(len(column))], fontdict=label_font, minor=True,
                        rotation=85)
-    ax.set_yticklabels([column[i][:5] if i % 2 == 0 else None for i in range(len(column))], fontdict=label_font,
+    ax.set_yticklabels([column[i] if i % 2 == 0 else None for i in range(len(column))], fontdict=label_font,
                        minor=True)  # va='center_baseline',
     # import matplotlib.transforms as mtrans
     # for i in ax.get_xticklabels():
@@ -68,10 +84,24 @@ def plt_fig1():
     ax.tick_params(axis='x', direction='out', labelrotation=85, length=0.00001)
     ax.tick_params(axis='y', direction='out', labelrotation=0, length=0.00001)
     # ax.tick_params(axis='y', labelrotation=-45)
-    ax.text(1, 66, 'A', fontdict=index_label_font)
+    ax.text(0.1, 66, 'A', fontdict=index_label_font)
     
     csv_file = r'G:\ztml\ztml\data\normalized_data.csv'
-    dd, column = read_data_for_plt(csv_file)
+    dd, columns = read_data_for_plt(csv_file)
+    column = []
+    for nn in columns:
+        if str(nn).startswith('K') or str(nn).startswith('k'):
+            _label = r'$\kappa_{%s}$' % nn[1:]
+        elif str(nn).startswith('r') or str(nn).startswith('R') or str(nn).startswith('n') or str(nn).startswith('m'):
+            _label = r'%s$_{%s}$' % (str(nn[0]).lower(), nn[1:])
+        elif str(nn) == 'a/b':
+            _label = nn
+        elif str(nn) == 'NC.1':
+            nn = "NCo"
+            _label = r'%s$_{%s}$' % (str(nn[0]).upper(), nn[1:])
+        else:
+            _label = r'%s$_{%s}$' % (str(nn[0]).upper(), nn[1:])
+        column.append(_label)
 
     _ = sns.heatmap(dd, vmin=-1, vmax=1, cmap='coolwarm', ax=ax3, cbar=False)
     ax3.set_xticks(np.array(range(len(column))))
@@ -84,8 +114,8 @@ def plt_fig1():
 
     ax3.set_xticklabels([])
     ax3.set_yticklabels([])
-    ax3.set_xticklabels([i[:5] for i in column], fontdict=label_font, minor=True, rotation=85)
-    ax3.set_yticklabels([i[:5] for i in column], fontdict=label_font, minor=True)  # va='center_baseline',
+    ax3.set_xticklabels([i for i in column], fontdict=label_font, minor=True, rotation=85)
+    ax3.set_yticklabels([i for i in column], fontdict=label_font, minor=True)  # va='center_baseline',
     # import matplotlib.transforms as mtrans
     # for i in ax.get_xticklabels():
     #     i.set_transform(i.get_transform() + mtrans.Affine2D().translate(5.5, 10))
@@ -97,7 +127,7 @@ def plt_fig1():
     #
     ax3.tick_params(axis='x', direction='out', labelrotation=85, length=0.00001)
     ax3.tick_params(axis='y', direction='out', labelrotation=0, length=0.00001)
-    ax3.text(0.5, 28.3, 'B', fontdict=index_label_font)
+    ax3.text(0.1, 28.3, 'B', fontdict=index_label_font)
 
     # plt.savefig('plt_coref_fig1.pdf')
     plt.tight_layout()

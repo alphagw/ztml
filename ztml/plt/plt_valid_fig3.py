@@ -16,6 +16,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
 from ztml.plt.plt_train_fig2 import read_cal_predit
+import scipy.stats
 
 
 def gather_data(fn):
@@ -35,32 +36,13 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
     __tmp_ori2 = [round(i, 5) for i in (__tmp_ori2 - np.min(__tmp_ori2)) /(np.max(__tmp_ori2) - np.min(__tmp_ori2))]
     origin_data = dict(zip(__tmp_ori2, __tmp_ori1))
 
-    label_font = {"fontsize": 16}
+    label_font = {"fontsize": 16, 'family': 'Times New Roman'}
     tick_font_size = 14
-    index_label_font = {"fontsize": 18, 'weight': 'bold'}
+    index_label_font = {"fontsize": 20, 'weight': 'bold', 'family': 'Times New Roman'}
     # lv #3CAF6F
     plt.figure(figsize=(16, 8))
-    npd1 = read_cal_predit(ntype1)
-    ax0 = plt.subplot2grid((12, 2), (0, 0), colspan=1, rowspan=2)
-    for i in range(npd1.shape[0]):
-        symbol = origin_data[round(npd1[i][-1], 5)]
-        ax0.scatter(i, npd1[i][0], edgecolors='white',color='#3CAF6F', alpha=0.8, linewidths=0.2, s=90)
-        ax0.scatter(i, aa(npd1[i][1]), edgecolors='white',color='darkorange',alpha=0.8, linewidths=0.2, s=90)
-        
-    ax0.set_xlim(-2, 122)
-    ax0.set_ylim(-0.2, 1.2)
-    colors = {'Calculated': '#3CAF6F', 'Predicted': 'darkorange'}
-    labels = list(colors.keys())
-    handles = [plt.Rectangle((0, 0), 1, 1, color=colors[label]) for label in labels]
-    ax0.legend(handles, labels, ncol=2)
-    ax0.text(0, 1.3, "A", fontdict=index_label_font)
-    # ax0.set_yticklabels({0: 'Ntype', 1:'Ptype'})
-    ax0.set_yticks([0, 1])
-    ax0.set_yticklabels(['N-type', 'P-type'])
-    ax0.tick_params(labelsize=tick_font_size)
-    ax0.set_xlabel("Index of compounds", fontdict=label_font)
-    
-    ax = plt.subplot2grid((12, 2), (3, 0), colspan=1, rowspan=9)
+    plt.rc('font', family='Times New Roman', weight='normal')
+    ax = plt.subplot2grid((12, 2), (0, 0), colspan=1, rowspan=9)
     # fig, axes = plt.subplots(3, 2, figsize=(16, 8))
     # ax = axes[0]
     pd1 = gather_data(fn)
@@ -78,6 +60,8 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
         # ax.scatter(pd1[m, 0], pd1[m, 1], edgecolors='white', color='#347FE2', linewidths=0.2,
         #            alpha=(pd1[m, 2] - 100) / 550, s=90)
     # ax.scatter(pd1[:, 0], pd1[:, 1], c=t, norm=mpl.colors.BoundaryNorm(t, cmp.N), cmap=cmp)
+    slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(pd1[:, 0], pd1[:, 1])
+    print(r_value ** 2)
     slice_set = 0.0, 1.
     _tmp_xy = np.linspace(slice_set, pd1.shape[0])
     ax.plot(_tmp_xy, _tmp_xy, '#F37878', linewidth=3, alpha=0.8)
@@ -85,12 +69,33 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
     ax.set_ylim(slice_set)
     ax.set_xlabel("Calculated", fontdict=label_font)
     ax.set_ylabel("Predicted", fontdict=label_font)
-    ax.text(0.01, 1.01, "B", fontdict=index_label_font)
+    ax.text(0.01, 1.01, "A", fontdict=index_label_font)
+    ax.text(0.15, 0.8, "R-squared(R2): %.5f" % r_value**2, fontdict=label_font)
     labels = [str(i)+'K' for i in c12.keys()]
     handles = [plt.Circle((0, 0), 1, color=c12[int(label[:-1])]) for label in labels]
     ax.legend(handles, labels, ncol=3, loc='lower right')
     # ax.text(-0.175, 1.2, pindex[i], fontsize=12)
     plt.subplots_adjust(hspace=0.3)
+
+    npd1 = read_cal_predit(ntype1)
+    ax0 = plt.subplot2grid((12, 2), (10, 0), colspan=1, rowspan=2)
+    for i in range(npd1.shape[0]):
+        symbol = origin_data[round(npd1[i][-1], 5)]
+        ax0.scatter(i, npd1[i][0], edgecolors='white', color='#3CAF6F', alpha=0.8, linewidths=0.2, s=90)
+        ax0.scatter(i, aa(npd1[i][1]), edgecolors='white', color='darkorange', alpha=0.8, linewidths=0.2, s=90)
+
+    ax0.set_xlim(-2, 122)
+    ax0.set_ylim(-0.2, 1.2)
+    colors = {'Calculated': '#3CAF6F', 'Predicted': 'darkorange'}
+    labels = list(colors.keys())
+    handles = [plt.Rectangle((0, 0), 1, 1, color=colors[label]) for label in labels]
+    ax0.legend(handles, labels, ncol=2)
+    ax0.text(0, 1.3, "B", fontdict=index_label_font)
+    # ax0.set_yticklabels({0: 'Ntype', 1:'Ptype'})
+    ax0.set_yticks([0, 1])
+    ax0.set_yticklabels(['N-type', 'P-type'])
+    ax0.tick_params(labelsize=tick_font_size)
+    ax0.set_xlabel("Data point", fontdict=label_font)
 
     # b_x_slice_set = -1, 92
     b_y_slice_set = 0, 0.9
@@ -102,7 +107,7 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
     new_data = pd.DataFrame(__dd, columns=['CZT', 'PZT', 'T', 'N3', "V1", "CN", "PN"], index=None)
     split_data = new_data.groupby(['N3'])
     dd = []
-    txt_label = ['ABC124', 'ABC147', 'ABC225', 'ABC326']
+    txt_label = ['A${_1}$B${_2}$C${_4}$', 'A${_1}$B${_4}$C${_7}$', 'A${_2}$B${_2}$C${_5}$', 'A${_3}$B${_2}$C${_6}$']
     for i, j in split_data.groups.items():
         dd.append(new_data.loc[j])
     # print(split_data)
@@ -162,8 +167,7 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
         
         if i == 2:
             ax2.text(0, 0.85, txt_label[i], fontdict=label_font)
-            ax2.set_ylabel("                       The value of ZT predicted "
-                           "by Machine learning", fontdict=label_font)
+            ax2.set_ylabel("                                          ZT$_{max}$", fontdict=label_font)
         else:
             ax2.text(1, 0.85, txt_label[i], fontdict=label_font)
 

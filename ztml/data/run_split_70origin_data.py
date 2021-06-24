@@ -63,6 +63,12 @@ def read_rename_clean_datafile():
 
 
 def run_compounds_split(fn):
+    """
+    根据化合物分割训练集合测试集，并输出到CSV文件中
+    :param fn: 原始数据文件名
+    :return: None
+    """
+    
     # 重命名每一列
     origin_data = read_data(fn)
     rename_data = get_rename_column_data(origin_data)

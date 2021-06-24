@@ -13,6 +13,7 @@ __date__ = '2021/05/25 09:01:54'
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import scipy.stats
 
 
 def plt_mse(data, outfn):
@@ -66,10 +67,10 @@ def run_mse(fn, outfn):
 
 
 def plt_result(predict_data, training_data, text=None, save_fn=None, show=False):
-    label_font = {"fontsize": 14}
-    legend_font = {"fontsize": 12}
+    label_font = {"fontsize": 14, 'family': 'Times New Roman'}
+    legend_font = {"fontsize": 12, 'family': 'Times New Roman'}
     tick_font_size = 12
-    index_label_font = {"fontsize": 18, 'weight': 'bold'}
+    index_label_font = {"fontsize": 20, 'weight': 'bold', 'family': 'Times New Roman'}
     pindex = ['A', 'B', 'C', 'D', 'E', 'F']
     _xwd, _ywd = 0.118, 0.12
     sax = [[0.18098039215686275 + 0.020, 0.60, _xwd, _ywd],
@@ -82,6 +83,7 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
     nrow = 2
     ncol = 3
     fig, axes = plt.subplots(nrow, ncol, figsize=(14, 8))
+    plt.rc('font', family='Times New Roman', weight='normal')
     axes = axes.flatten()
     
     assert axes.shape[0] == len(predict_data) == len(training_data)
@@ -92,6 +94,7 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         ax = axes[i]
         pd1 = predict_data[i]
         ax.scatter(pd1[:, 0], pd1[:, 1], edgecolors='white', color='#347FE2', linewidths=0.2)
+        slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(pd1[:, 0], pd1[:, 1])
         slice_set = 0.0, 1.25
         _tmp_xy = np.linspace(slice_set, pd1.shape[0])
         ax.plot(_tmp_xy, _tmp_xy, '#F37878', linewidth=3, alpha=0.8)
@@ -100,9 +103,9 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         ax.set_xlabel("Calculated", fontdict=label_font)
         ax.set_ylabel("Predicted", fontdict=label_font)
         if i > 3:
-            ax.text(0.1, 1.0, text[i], fontdict=legend_font)
+            ax.text(0.05, 0.9, text[i] % r_value**2, fontdict=legend_font)
         else:
-            ax.text(0.2, 1.0, text[i], fontdict=legend_font)
+            ax.text(0.10, 0.9, text[i]% r_value**2, fontdict=legend_font)
 
         ax.text(0.01, 1.3, pindex[i], fontdict=index_label_font)
         ax.tick_params(axis='both', labelsize=tick_font_size)
@@ -165,12 +168,12 @@ if __name__ == '__main__':
     label = 'run1'
     save_dir = r'..\train\training_module'
     # run_mse(os.path.join(save_dir, 'running_%s.log' % label), 'training_%s.pdf' % label)
-    text = ["Activation      : Relu\nOptimizer      : Adam\nHiddenLayers: [100, 50, 20]",
-            "Activation      : Sigmod\nOptimizer      : Adam\nHiddenLayers: [100, 50, 20]",
-            "Activation      : Tanh\nOptimizer      : Adam\nHiddenLayers: [100, 50, 20]",
-            "Activation      : Relu\nOptimizer      : SGD\nHiddenLayers: [100, 50, 20]",
-            "Activation      : Relu\nOptimizer      : Adam\nHiddenLayers: [100, 100, 50, 20]",
-            "Activation      : Relu\nOptimizer      : Adam\nHiddenLayers: [500, 100, 50, 20]"]
+    text = ["Activation       : Relu\nOptimizer       : Adam\nHiddenLayers : [100, 50, 20]\nR-squared(R2): %.5f",
+            "Activation       : Sigmod\nOptimizer       : Adam\nHiddenLayers : [100, 50, 20]\nR-squared(R2): %.5f",
+            "Activation       : Tanh\nOptimizer       : Adam\nHiddenLayers : [100, 50, 20]\nR-squared(R2): %.5f",
+            "Activation       : Relu\nOptimizer       : SGD\nHiddenLayers : [100, 50, 20]\nR-squared(R2): %.5f",
+            "Activation       : Relu\nOptimizer       : Adam\nHiddenLayers : [100, 100, 50, 20]\nR-squared(R2): %.5f",
+            "Activation       : Relu\nOptimizer       : Adam\nHiddenLayers : [500, 100, 50, 20]\nR-squared(R2): %.5f"]
     for i in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
         predict_data, training_data = [], []
         # for label in ['3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500']:
