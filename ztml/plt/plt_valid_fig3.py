@@ -39,6 +39,7 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
     label_font = {"fontsize": 16, 'family': 'Times New Roman'}
     tick_font_size = 14
     index_label_font = {"fontsize": 20, 'weight': 'bold', 'family': 'Times New Roman'}
+    tick_font_dict = {"fontsize": tick_font_size, 'family': 'Times New Roman'}
     # lv #3CAF6F
     plt.figure(figsize=(16, 8))
     plt.rc('font', family='Times New Roman', weight='normal')

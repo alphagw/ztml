@@ -67,9 +67,16 @@ def run_mse(fn, outfn):
 
 
 def plt_result(predict_data, training_data, text=None, save_fn=None, show=False):
+    
+    a0 = predict_data.pop(0)
+    t0 = training_data.pop(0)
+    predict_data.insert(2, a0)
+    training_data.insert(2, t0)
+    
     label_font = {"fontsize": 14, 'family': 'Times New Roman'}
     legend_font = {"fontsize": 12, 'family': 'Times New Roman'}
     tick_font_size = 12
+    tick_font_dict = {"fontsize": 12, 'family': 'Times New Roman'}
     index_label_font = {"fontsize": 20, 'weight': 'bold', 'family': 'Times New Roman'}
     pindex = ['A', 'B', 'C', 'D', 'E', 'F']
     _xwd, _ywd = 0.118, 0.12
@@ -108,7 +115,9 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
             ax.text(0.10, 0.9, text[i]% r_value**2, fontdict=legend_font)
 
         ax.text(0.01, 1.3, pindex[i], fontdict=index_label_font)
-        ax.tick_params(axis='both', labelsize=tick_font_size)
+        ax.set_xticklabels([round(i, 2) for i in ax.get_xticks()], tick_font_dict)
+        ax.set_yticklabels([round(i, 2) for i in ax.get_yticks()], tick_font_dict)
+        # ax.tick_params(axis='both', labelsize=tick_font_size)
         d = ax.get_position()
         print(i, d)
         tdata = training_data[i][1:, :]
@@ -139,7 +148,7 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
             ax2.set_ylim(-0.001, 0.2)
             ax2.text(2000, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
 
-        elif (i == 2) or (i == 1):
+        elif (i == 1) or (i == 0):
             ax2.set_xlim(-120, 3000)
             ax2.set_ylim(-0.001, 0.08)
             ax2.text(1000, 0.02, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
@@ -168,12 +177,12 @@ if __name__ == '__main__':
     label = 'run1'
     save_dir = r'..\train\training_module'
     # run_mse(os.path.join(save_dir, 'running_%s.log' % label), 'training_%s.pdf' % label)
-    text = ["Activation       : Relu\nOptimizer       : Adam\nHiddenLayers : [100, 50, 20]\nR-squared(R2): %.5f",
-            "Activation       : Sigmod\nOptimizer       : Adam\nHiddenLayers : [100, 50, 20]\nR-squared(R2): %.5f",
-            "Activation       : Tanh\nOptimizer       : Adam\nHiddenLayers : [100, 50, 20]\nR-squared(R2): %.5f",
-            "Activation       : Relu\nOptimizer       : SGD\nHiddenLayers : [100, 50, 20]\nR-squared(R2): %.5f",
-            "Activation       : Relu\nOptimizer       : Adam\nHiddenLayers : [100, 100, 50, 20]\nR-squared(R2): %.5f",
-            "Activation       : Relu\nOptimizer       : Adam\nHiddenLayers : [500, 100, 50, 20]\nR-squared(R2): %.5f"]
+    text = ["Activation        : Sigmod\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
+            "Activation        : Tanh\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
+            "Activation        : Relu\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
+            "Activation        : Relu\nOptimizer        : SGD\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
+            "Activation        : Relu\nOptimizer        : Adam\nHidden Layers : [100, 100, 50, 20]\nR-squared(R2) : %.5f",
+            "Activation        : Relu\nOptimizer        : Adam\nHidden Layers : [500, 100, 50, 20]\nR-squared(R2) : %.5f"]
     for i in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
         predict_data, training_data = [], []
         # for label in ['3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500']:

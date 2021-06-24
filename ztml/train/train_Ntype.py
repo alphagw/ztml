@@ -217,22 +217,35 @@ def write(fn, content, mode='w'):
 
 
 def run_train():
-    hidden_layer = [500, 100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
+    
+    labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
+    activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
+    hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
+    optimizers = ['Adam', 'Adam', 'Adam', 'SGD', 'Adam', 'Adam']
+
+    # hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
     epoch = 5000
     #'3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
-    label = 'N_type_4layer_500'
-    activation = nn.ReLU()
-    optimizer = 'Adam'
-    train(cuda=True,
-          epoch=epoch,
-          save_dir=save_dir,
-          label=label,
-          zt=False,
-          n_feature=nfeature,
-          HIDDEN_NODES=hidden_layer,
-          activation=activation,
-          optimizer=optimizer,
-          n_output=1)
+    # label = '3layer_100'
+    # activation = nn.ReLU()
+    # optimizer = 'Adam'
+    
+    for i in range(len(labels)):
+        label = labels[i]
+        activation = activations[i]
+        hidden_layer = hidden_layers[i]
+        optimizer = optimizers[i]
+        
+        train(cuda=True,
+              epoch=epoch,
+              save_dir=save_dir,
+              label=label,
+              zt=False,
+              n_feature=nfeature,
+              HIDDEN_NODES=hidden_layer,
+              activation=activation,
+              optimizer=optimizer,
+              n_output=1)
 
 
 def run_test():
@@ -253,7 +266,7 @@ def run_test():
         break
             
 if __name__ == '__main__':
-    save_dir = 'training_module'
+    save_dir = 'ntype_training_module'
     nfeature = 28
     run_train()
     # run_test()

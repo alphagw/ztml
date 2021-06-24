@@ -30,7 +30,7 @@ def plt_fig1():
     label_font = {"fontsize": 14, 'family': 'Times New Roman'}
     index_label_font = {"fontsize": 20, 'weight': 'bold', 'family': 'Times New Roman'}
     tick_font_size = 14
-    
+    tick_font_dict = {"fontsize": 14, 'family': 'Times New Roman'}
     fig = plt.figure(figsize=(18, 8))
     plt.rc('font', family='Times New Roman', weight='normal')
     ax = plt.subplot2grid((1, 22), (0, 0), colspan=10, rowspan=1, fig=fig)
@@ -68,9 +68,9 @@ def plt_fig1():
     
     ax.set_xticklabels([])
     ax.set_yticklabels([])
-    ax.set_xticklabels([column[i] if i % 2 == 0 else None for i in range(len(column))], fontdict=label_font, minor=True,
+    ax.set_xticklabels([column[i] if i % 2 == 0 else None for i in range(len(column))], fontdict=tick_font_dict, minor=True,
                        rotation=85)
-    ax.set_yticklabels([column[i] if i % 2 == 0 else None for i in range(len(column))], fontdict=label_font,
+    ax.set_yticklabels([column[i] if i % 2 == 0 else None for i in range(len(column))], fontdict=tick_font_dict,
                        minor=True)  # va='center_baseline',
     # import matplotlib.transforms as mtrans
     # for i in ax.get_xticklabels():
@@ -114,8 +114,8 @@ def plt_fig1():
 
     ax3.set_xticklabels([])
     ax3.set_yticklabels([])
-    ax3.set_xticklabels([i for i in column], fontdict=label_font, minor=True, rotation=85)
-    ax3.set_yticklabels([i for i in column], fontdict=label_font, minor=True)  # va='center_baseline',
+    ax3.set_xticklabels([i for i in column], fontdict=tick_font_dict, minor=True, rotation=85)
+    ax3.set_yticklabels([i for i in column], fontdict=tick_font_dict, minor=True)  # va='center_baseline',
     # import matplotlib.transforms as mtrans
     # for i in ax.get_xticklabels():
     #     i.set_transform(i.get_transform() + mtrans.Affine2D().translate(5.5, 10))
