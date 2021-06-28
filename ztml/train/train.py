@@ -167,12 +167,12 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
 
 
 def ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34, shuffle=False,
-          HIDDEN_NODES=[100, 50, 50, 20], activation=nn.ReLU(), batch_size=252, has_t=None):
+          HIDDEN_NODES=[100, 50, 50, 20], activation=nn.ReLU(), batch_size=252, has_t=None, n_output=1):
     # csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
     # test_csv_fn = r'G:\ztml\ztml\data\test_data_from_normalized_data.csv'
     train_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=shuffle, batch_size=batch_size)
 
-    dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=1, batch_normalize=True, dropout=True, activation=activation)
+    dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=n_output, batch_normalize=True, dropout=True, activation=activation)
 
     dnn.load_state_dict(torch.load(mp_fn))
     loss_func = nn.MSELoss()

@@ -108,7 +108,7 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
     else:
         raise ValueError("Only support Adam and SGD")
     # loss_func = nn.Softmax()
-    loss_func = nn.MSELoss()
+    loss_func = nn.CrossEntropyLoss()
     # l1_crit = nn.L1Loss(size_average=False)
     # reg_loss = 0
     # for param in dnn.parameters():
@@ -136,9 +136,8 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
             #         output[i] = 0
             #     else:
             #         output[i] = 1
-            label_y = b_y.reshape(-1, 1)
-            loss = loss_func(output, label_y.float())  # + 0.005 * reg_loss
-
+            # label_y = b_y.reshape(-1, 1)
+            loss = loss_func(output, b_y.long())  # + 0.005 * reg_loss
             dnn.eval()
             for _, (test_x, test_y) in enumerate(test_pmdata_loader):
                 
@@ -146,15 +145,14 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
                     test_x, test_y = test_x.cuda(), test_y.cuda()
 
                 test_output = dnn(test_x.float())
-                testlabel_y = test_y.reshape(-1, 1)
-                test_loss = loss_func(test_output, testlabel_y.float())  # + 0.005 * reg_loss
+                test_loss = loss_func(test_output, test_y.long())  # + 0.005 * reg_loss
             # print(output.cpu().data.numpy().shape, label_y.cpu().data.numpy().shape)
             
             dnn.train()
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            txt_temple = 'Epoch: {0} | Step: {1} | train loss: {2:.6f} | test loss: {3:.6f}'.format(epoch, step, loss.cpu().data.numpy(), test_loss.cpu().data.numpy())
+            txt_temple = 'Epoch: {0} | Step: {1} | train loss: {2:.12f} | test loss: {3:.12f}'.format(epoch, step, loss.cpu().data.numpy(), test_loss.cpu().data.numpy())
             print(txt_temple)
             # now_step = step + epoch * math.ceil(TOTAL_LINE / BATCH_SIZE)
             save_module = True
@@ -210,27 +208,72 @@ def ntype_ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34, shu
         #     break
 
 
+def CrossEntropyLoss_ntype_ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34, shuffle=False,
+                HIDDEN_NODES=[100, 50, 50, 20], activation=nn.ReLU(), batch_size=252, zt=False, n_output=1, has_t=None):
+    # csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
+    # test_csv_fn = r'G:\ztml\ztml\data\test_data_from_normalized_data.csv'
+    train_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=shuffle, batch_size=batch_size, zt=zt)
+    
+    dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=n_output, batch_normalize=True, dropout=True,
+              activation=activation)
+    
+    dnn.load_state_dict(torch.load(mp_fn))
+    loss_func = nn.CrossEntropyLoss()
+    
+    for step, (b_x, b_y) in enumerate(train_pmdata_loader):
+        b_x, b_y = b_x, b_y
+        dnn.eval()
+        output = dnn(b_x.float())
+        
+        label_y = b_y.reshape(-1, 1)
+        # label_y = b_y.long()
+        loss = loss_func(output, b_y.long())
+        # print('loss: ', loss.data.numpy(), 'label_y: ', label_y.data.numpy(), 'predict_y: ', output.data.numpy())
+        print('loss: ', loss.data.numpy())
+        
+        def change_output(x):
+            if x[0] > x[1]:
+                return 0.0
+            else:
+                return 1.0
+        
+        with open(os.path.join(save_dir, output_fn), 'w') as f:
+            for i in range(len(label_y.data.numpy())):
+                if has_t:
+                    if has_t is not None:
+                        f.write("%.7f     %.7f      %s\n" % (
+                        label_y.data.numpy()[i][0], change_output(output.data.numpy()[i]),
+                        '  '.join([str(b_x.data.numpy()[i][m]) for m in has_t])))
+                    else:
+                        f.write("%.7f     %.7f\n" % (label_y.data.numpy()[i][0], change_output(output.data.numpy()[i])))
+                else:
+                    f.write("%.7f     %.7f\n" % (label_y.data.numpy()[i][0], change_output(output.data.numpy()[i])))
+                print(label_y.data.numpy()[i][0], '   ', change_output(output.data.numpy()[i]))
+        
+        # if step == 10:
+        #     break
+
+
 def write(fn, content, mode='w'):
     with open(fn, mode) as f:
         f.write(content + '\n')
 
 
-
 def run_train():
     
     labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
-    activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
+    activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.Sigmoid(), nn.Sigmoid(), nn.Sigmoid()]
     hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
     optimizers = ['Adam', 'Adam', 'Adam', 'SGD', 'Adam', 'Adam']
 
     # hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
-    epoch = 5000
+    epoch = 8000
     #'3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
     # label = '3layer_100'
     # activation = nn.ReLU()
     # optimizer = 'Adam'
     
-    for i in range(len(labels)):
+    for i in range(0, len(labels)):
         label = labels[i]
         activation = activations[i]
         hidden_layer = hidden_layers[i]
@@ -245,7 +288,28 @@ def run_train():
               HIDDEN_NODES=hidden_layer,
               activation=activation,
               optimizer=optimizer,
-              n_output=1)
+              n_output=2)
+        
+        
+def run_t():
+    # labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
+    # activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
+    # hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
+    
+    labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
+    activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.Sigmoid(), nn.Sigmoid(), nn.Sigmoid()]
+    hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
+
+    for m in ['train_30_train.csv', 'train_30_test.csv', '10_for_check.csv']:
+        for i in range(len(labels)):
+            nlabel = labels[i]
+            nactivation = activations[i]
+            nhidden_layer = hidden_layers[i]
+
+            CrossEntropyLoss_ntype_ttest(test_csv_fn=os.path.join(r'..\\data', m),
+                        mp_fn=os.path.join(save_dir, 'dnn_params_8000_%s.pkl' % nlabel),
+                        output_fn='result_%s_%s.out' % (m, nlabel), activation=nactivation,
+                        save_dir=save_dir, n_feature=nfeature, HIDDEN_NODES=nhidden_layer, zt=False, n_output=2)
 
 
 def run_test():
@@ -264,9 +328,16 @@ def run_test():
               output_fn='result_%s_%s.out' % (m, nlabel), activation=nactivation,
               save_dir=save_dir,  n_feature=nfeature, HIDDEN_NODES=nhidden_layer, zt=False, n_output=1)
         break
-            
+        
+        
 if __name__ == '__main__':
-    save_dir = 'ntype_training_module'
-    nfeature = 28
-    run_train()
+    # save_dir = 'ntype_training_module'
+    # nfeature = 28
+    # run_train()
     # run_test()
+    
+    save_dir = '2ntype_training_module'
+    nfeature = 28
+    # run_train()
+    run_t()
+

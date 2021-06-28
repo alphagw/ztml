@@ -182,6 +182,7 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
 
 if __name__ == '__main__':
     save_dir = r'..\train\training_module'
+    save_dir2 = r'..\train\2ntype_training_module'
     fn1 = r'10_for_check.csv'
     fn2 = r'30_for_predict.csv'
     data_file1 = os.path.join(save_dir, 'z_result_valid_has_t_%s.out' % fn1)
