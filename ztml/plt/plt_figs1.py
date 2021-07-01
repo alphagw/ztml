@@ -115,7 +115,7 @@ def plt_cor(data, columns):
 
     plt.subplots_adjust(left=0.06, bottom=0.06, right=0.98, top=0.97, wspace=1, hspace=1)
     # plt.show()
-    plt.savefig('plt_coref_FigS1.pdf')
+    plt.savefig('plt_coref_FigS1.tiff')
 
 
 if __name__ == '__main__':

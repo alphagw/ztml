@@ -164,7 +164,7 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
             ax2.text(1000, 0.01, 'train:%.5f\ntest :%.5f' % (float(train_final_mean), float(test_final_mean)))
             ax2.legend(fontsize=8)
 
-        ax2.set_ylabel('MSE')
+        ax2.set_ylabel('Cross Entropy')
         plt.tight_layout()
 
     if save_fn is not None:
@@ -196,7 +196,7 @@ if __name__ == '__main__':
             output_fn = os.path.join(save_dir, 'result_%s_%s.out' % (i, label))
             predict_data.append(read_cal_predit(output_fn))
         
-        save_fn = 'plt_%s_figS2.pdf' % i
+        save_fn = 'plt_%s_figS2.tiff' % i
         # plt_result(predict_data, training_data, text, save_fn=None, show=True)
         plt_result(predict_data, training_data, text, save_fn=save_fn, show=False)
 

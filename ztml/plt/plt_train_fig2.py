@@ -166,7 +166,7 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         plt.tight_layout()
 
     if save_fn is not None:
-        plt.savefig(save_fn)
+        plt.savefig(save_fn, dpi=600)
         
     if show:
         plt.show()

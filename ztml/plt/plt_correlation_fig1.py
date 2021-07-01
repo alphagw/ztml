@@ -133,7 +133,7 @@ def plt_fig1():
     plt.tight_layout()
     plt.subplots_adjust(left=0.05, bottom=0.1, top=0.95, right=0.98, wspace=1)
     # plt.show()
-    plt.savefig('plt_coref_fig1.pdf')
+    plt.savefig('plt_coref_fig1.tiff', dpi=600)
 
 
 if __name__ == '__main__':
