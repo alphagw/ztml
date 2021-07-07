@@ -127,3 +127,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .idea/
+
+# self
+cifar-10*
+data_batch*
+batches.meta
+test_batch
+readme.html
