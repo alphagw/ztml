@@ -108,7 +108,7 @@ def plt_predict_cal(fn, fn2, ntype1, ntype2):
     new_data = pd.DataFrame(__dd, columns=['CZT', 'PZT', 'T', 'N3', "V1", "CN", "PN"], index=None)
     split_data = new_data.groupby(['N3'])
     dd = []
-    txt_label = ['A${_1}$B${_2}$C${_4}$', 'A${_1}$B${_4}$C${_7}$', 'A${_2}$B${_2}$C${_5}$', 'A${_3}$B${_2}$C${_6}$']
+    txt_label = ['A${_1}$B${_2}$C${_4}$', 'A${_2}$B${_2}$C${_5}$', 'A${_1}$B${_4}$C${_7}$', 'A${_3}$B${_2}$C${_6}$']
     for i, j in split_data.groups.items():
         dd.append(new_data.loc[j])
     # print(split_data)
