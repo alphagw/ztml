@@ -1,17 +1,18 @@
 # ztml
 
-#### 介绍
+#### Introduction
 ZT value of thermoelectric materials by Machine Learning.
 
 
-#### 安装教程
+#### Install
 
 pip install ztml
 
 
-#### 使用说明
+#### README
 
-暂无
+Comming soon ...
 
-#### 开发人员
-[Guanjie Wang](https://alkemine.cn/gjwang)
+#### Developers
+[Guanjie Wang](https://alkemine.cn/gjwang), gjwang@buaa.edu.cn
+Yu Gan, ganyubf@buaa.edu.cn
