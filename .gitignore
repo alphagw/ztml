@@ -116,7 +116,6 @@ dmypy.json
 
 # self
 .idea
-*.pkl
 cifar-10*
 data_batch*
 batches.meta
