@@ -11,10 +11,11 @@ __email__ = "gjwang@buaa.edu.cn"
 __date__ = '2021/06/10 16:39:37'
 
 from ztml.tools import get_train_test_index, get_random_groupby_index
-from ztml.data.clean_csv_data import get_clean_data, read_data
 from ztml.data.feature_normalize_data import get_normalize_data
-from ztml.data.rename_cloumn import get_rename_column_data
 from ztml.data.split_tran_and_test import split_to_train2test
+
+from ztml.rdata.clean_csv_data import get_clean_data, read_data
+from ztml.rdata.rename_cloumn import get_rename_column_data
 
 
 def run(fn):
@@ -62,6 +63,13 @@ def read_rename_clean_datafile():
     normalized_data.to_csv('normalized_data.csv', index=False)
 
 
+def __rm_point_columns(data, index=["Index"]):
+    ll = data.columns.get_values().tolist()
+    for i in index:
+        ll.remove(i)
+    return data[ll]
+
+
 def run_compounds_split(fn):
     """
     根据化合物分割训练集合测试集，并输出到CSV文件中
@@ -82,31 +90,35 @@ def run_compounds_split(fn):
     # os.remove(tmp_file)
 
     # 获取归一化之后数据，并删除相关列
-    normalized_data, _ = get_normalize_data(clean_train_data)
-    normalized_data.to_csv('normalized_data.csv', index=False)
-    
+    normalized_data, l = get_normalize_data(clean_train_data, gogal_column=['Index',
+                                                                            'NA', 'NB', 'NC', 'NT', 'VA', 'VB', 'VC',
+                                                                            'RA', 'RB', 'RC', 'ZA', 'ZB', 'ZC', 'rA',
+                                                                            'rB', 'rC', 'rCA', 'rCB', 'rCC', 'PA',
+                                                                            'PB', 'PC', 'PAv', 'PSd', 'a_b', 'c',
+                                                                            'MAv', 'LAC', 'LBC', 'SAC', 'SBC', 'LAv',
+                                                                            'SAv', 'Temperature'])
     # normalized_data = read_data('normalized_data.csv')
     # 根据总原子（化合物）将数据分为30个训练和40个验证集
-    use2train_data, use2valid_data = get_random_groupby_index(normalized_data, column_index=['B_Gpa'],
+    use2train_data, use2valid_data = get_random_groupby_index(normalized_data, column_index=['Index'],
                                                               ratio=4/7, to_data=True)
     
     # 将训练及在次分为训练集和测试集
-    train_train_data, train_test_data = get_random_groupby_index(use2train_data, column_index=['B_Gpa'],
+    train_train_data, train_test_data = get_random_groupby_index(use2train_data, column_index=['Index'],
                                                                  ratio=0.3, to_data=True)
     print(train_train_data.shape, train_test_data.shape)
     
-    valid_10data, valid_30data = get_random_groupby_index(use2valid_data, column_index=['B_Gpa'],
+    valid_10data, valid_30data = get_random_groupby_index(use2valid_data, column_index=['Index'],
                                                           ratio=0.75, to_data=True)
     print(valid_10data.shape, valid_30data.shape)
+    
     # 输出数据
-    train_train_data.to_csv('train_30_train.csv', index=False)
-    train_test_data.to_csv('train_30_test.csv', index=False)
-    valid_10data.to_csv('10_for_check.csv', index=False)
-    valid_30data.to_csv('30_for_predict.csv', index=False)
+    __rm_point_columns(normalized_data).to_csv('normalized_data.csv', index=False)
+    __rm_point_columns(train_train_data).to_csv('train_30_train.csv', index=False)
+    __rm_point_columns(train_test_data).to_csv('train_30_test.csv', index=False)
+    __rm_point_columns(valid_10data).to_csv('10_for_check.csv', index=False)
+    __rm_point_columns(valid_30data).to_csv('30_for_predict.csv', index=False)
 
 
 if __name__ == '__main__':
-    file_name = r'0-20201203_descriptors.csv'
-    # run(file_name)
-    # run_compounds_split(file_name)
-    read_rename_clean_datafile()
+    file_name = r'simple_dataset.csv'
+    run_compounds_split(file_name)
