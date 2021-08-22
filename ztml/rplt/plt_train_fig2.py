@@ -68,10 +68,10 @@ def run_mse(fn, outfn):
 
 def plt_result(predict_data, training_data, text=None, save_fn=None, show=False):
     
-    a0 = predict_data.pop(0)
-    t0 = training_data.pop(0)
-    predict_data.insert(2, a0)
-    training_data.insert(2, t0)
+    # a0 = predict_data.pop(0)
+    # t0 = training_data.pop(0)
+    # predict_data.insert(2, a0)
+    # training_data.insert(2, t0)
     
     label_font = {"fontsize": 14, 'family': 'Times New Roman'}
     legend_font = {"fontsize": 12, 'family': 'Times New Roman'}
@@ -132,8 +132,8 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         if i == 3:
             left = left + 0.017
             width = width - 0.01
-            train_final_mean = np.mean(ytrain[8000:])
-            test_final_mean = np.mean(ytest[8000:])
+            train_final_mean = np.mean(ytrain[:4000])
+            test_final_mean = np.mean(ytest[:4000])
         else:
             left = left
             width = width
@@ -143,19 +143,19 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         ax2 = fig.add_axes([left, bottom, width, height])
         ax2.plot(tx, ytrain, c='#347FE2', linewidth=1.2, label='train')
         ax2.plot(tx, ytest, c='#F37878', linewidth=1.2, label='test')
-        if i == 3:
-            ax2.set_xlim(-120, 8000)
+        if i >= 3:
+            ax2.set_xlim(-120, 12000)
             ax2.set_ylim(-0.001, 0.2)
             ax2.text(2000, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
 
         elif (i == 1) or (i == 0):
             ax2.set_xlim(-120, 3000)
-            ax2.set_ylim(-0.001, 0.08)
-            ax2.text(1000, 0.02, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
+            ax2.set_ylim(-0.001, 0.2)
+            ax2.text(1000, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
         else:
             ax2.set_xlim(-120, 3000)
-            ax2.set_ylim(-0.001, 0.04)
-            ax2.text(1000, 0.01, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
+            ax2.set_ylim(-0.001, 0.2)
+            ax2.text(1000, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
 
         
         ax2.set_ylabel('MSE')
@@ -174,27 +174,31 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
 if __name__ == '__main__':
     # fn, ofn = r"training_module/out_run3.train", 'train.pdf'
     # fn, ofn = r"training_module/out_run3.test", 'test.pdf'
-    label = 'run1'
-    save_dir = r'..\rtrain\training_module'
+    # label = 'run1'
+    save_dir = r'..\rtrain\5training_module'
     # run_mse(os.path.join(save_dir, 'running_%s.log' % label), 'training_%s.pdf' % label)
     text = ["Activation        : Relu\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Sigmod\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Tanh\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
+            "Activation        : Relu\nOptimizer        : SGD\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
             "Activation        : Sigmod\nOptimizer        : SGD\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Sigmod\nOptimizer        : Adam\nHidden Layers : [100, 100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Sigmod\nOptimizer        : Adam\nHidden Layers : [500, 100, 50, 20]\nR-squared(R2) : %.5f"]
-    for i in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
+            "Activation        : Tanh\nOptimizer        : SGD\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
+            "Activation        : Relu\nOptimizer        : SGD\nHidden Layers : [100, 100, 50, 20]\nR-squared(R2) : %.5f",
+            "Activation        : Relu\nOptimizer        : SGD\nHidden Layers : [500, 100, 50, 20]\nR-squared(R2) : %.5f"]
+    for i in ['train_30_test.csv', 'train_30_train.csv', 'valid_40.csv']:
+    # for i in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
         predict_data, training_data = [], []
         # for label in ['3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500']:
-        for label in ['3layer_100', '3layer_100_sigmod', '3layer_100_Tanh',
-                      '3layer_100_sgd', '4layer_100', '4layer_500']: #'3layer_100_Elu', '3layer_100_PRelu',
+        # for label in ['3layer_100', '3layer_100_sigmod', '3layer_100_Tanh',
+        #               '3layer_100_sgd', '4layer_100', '4layer_500']: #'3layer_100_Elu', '3layer_100_PRelu',
+        labels = ["3layer_100_adam", "3layer_100_sgd", "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh",
+                  "4layer_100_sgd", "4layer_500_sgd"]
+        for label in labels: #'3layer_100_Elu', '3layer_100_PRelu',
             training_fn = os.path.join(save_dir, 'running_%s.log' % label)
             training_data.append(read_mse_data(training_fn))
 
             output_fn = os.path.join(save_dir, 'result_%s_%s.out' % (i, label))
             predict_data.append(read_cal_predit(output_fn))
-        
-        save_fn = 'plt_%s_fig2.pdf' % i
+            print(training_fn, output_fn)
+        save_fn = 'plt_%s_fig2train.pdf' % i
         # plt_result(predict_data, training_data, text, save_fn=None, show=True)
         plt_result(predict_data, training_data, text, save_fn=save_fn, show=False)
 

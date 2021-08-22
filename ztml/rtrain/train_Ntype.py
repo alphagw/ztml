@@ -19,7 +19,7 @@ from matfleet.utilities import now_time
 
 
 class DNN(nn.Module):
-    DP_RADIO = 0.3
+    DP_RADIO = 0.5
     B_ININT = -0.0
 
     def __init__(self, n_feature, n_hidden, n_output, batch_normalize=True, dropout=True, activation=nn.ReLU()):
@@ -79,6 +79,7 @@ def do_time():
 
 
 def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True, save_dir='', zt=False, label='1',
+          head_dir=r"..\\rdata\\",
           n_feature = 34, HIDDEN_NODES = [100, 50, 50, 20], activation=nn.ReLU(), optimizer='Adam', n_output=1):
     
     if os.path.isdir(save_dir):
@@ -86,8 +87,8 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
     else:
         os.mkdir(save_dir)
     
-    train_csv_fn = r'..\\data\\train_30_train.csv'
-    test_csv_fn = r'..\\data\\train_30_test.csv'
+    train_csv_fn = os.path.join(head_dir, 'train_30_train.csv')
+    test_csv_fn = os.path.join(head_dir, 'train_30_test.csv')
     train_pmdata_loader = load_pmdata(csv_file=train_csv_fn, shuffle=True, zt=zt, batch_size=588)
     test_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=True, zt=zt, batch_size=252)
     
@@ -259,12 +260,12 @@ def write(fn, content, mode='w'):
         f.write(content + '\n')
 
 
-def run_train():
+def run_train(nfeature, save_dir, head_dir):
     
-    labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
-    activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.Sigmoid(), nn.Sigmoid(), nn.Sigmoid()]
-    hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
-    optimizers = ['Adam', 'Adam', 'Adam', 'SGD', 'Adam', 'Adam']
+    labels = ["3layer_100", "3layer_100_sgd", "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh"] #, "4layer_100", "4layer_500"
+    activations = [nn.ReLU(), nn.ReLU(), nn.Sigmoid(), nn.Tanh()] # , nn.Sigmoid(), nn.Sigmoid()
+    hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20]] # , [100, 100, 50, 20], [500, 100, 50, 20]
+    optimizers = ['Adam', 'SGD', 'SGD', 'SGD'] # , 'Adam', 'Adam'
 
     # hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
     epoch = 8000
@@ -285,20 +286,26 @@ def run_train():
               label=label,
               zt=False,
               n_feature=nfeature,
+              head_dir=head_dir,
               HIDDEN_NODES=hidden_layer,
               activation=activation,
               optimizer=optimizer,
               n_output=2)
         
         
-def run_t():
+def run_t(nfeature, save_dir, head_dir):
     # labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
     # activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
     # hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
     
-    labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
-    activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.Sigmoid(), nn.Sigmoid(), nn.Sigmoid()]
-    hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
+    # labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
+    # activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.Sigmoid(), nn.Sigmoid(), nn.Sigmoid()]
+    # hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
+   
+    labels = ["3layer_100", "3layer_100_sgd", "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh"] #, "4layer_100", "4layer_500"
+    activations = [nn.ReLU(), nn.ReLU(), nn.Sigmoid(), nn.Tanh()] # , nn.Sigmoid(), nn.Sigmoid()
+    hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20]] # , [100, 100, 50, 20], [500, 100, 50, 20]
+    # optimizers = ['Adam', 'SGD', 'SGD', 'SGD'] # , 'Adam', 'Adam'
 
     for m in ['train_30_train.csv', 'train_30_test.csv', '10_for_check.csv']:
         for i in range(len(labels)):
@@ -306,7 +313,7 @@ def run_t():
             nactivation = activations[i]
             nhidden_layer = hidden_layers[i]
 
-            CrossEntropyLoss_ntype_ttest(test_csv_fn=os.path.join(r'..\\data', m),
+            CrossEntropyLoss_ntype_ttest(test_csv_fn=os.path.join(head_dir, m),
                         mp_fn=os.path.join(save_dir, 'dnn_params_8000_%s.pkl' % nlabel),
                         output_fn='result_%s_%s.out' % (m, nlabel), activation=nactivation,
                         save_dir=save_dir, n_feature=nfeature, HIDDEN_NODES=nhidden_layer, zt=False, n_output=2)
@@ -335,9 +342,9 @@ if __name__ == '__main__':
     # nfeature = 28
     # run_train()
     # run_test()
-    
-    save_dir = '2ntype_training_module'
-    nfeature = 28
-    # run_train()
-    run_t()
+    hdir = r'G:\ztml\ztml\rdata\all_rmcoref_data'
+    save_dirs = '3ntype_training_module'
+    nfeatures = 11
+    # run_train(nfeature=nfeatures, save_dir=save_dirs, head_dir=hdir)
+    run_t(nfeature=nfeatures, save_dir=save_dirs, head_dir=hdir)
 

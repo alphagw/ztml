@@ -55,7 +55,7 @@ def get_normalize_data(data, gogal_column=None):
         train_data = data.values[:, :-2]
         a = np.corrcoef(train_data, rowvar=0)
         b = np.abs(np.triu(a))
-        gp = auto_get_corelated_group(data=b, coref_val=0.85, is_triu=True, get_remove=True)
+        gp = auto_get_corelated_group(data=b, coref_val=0.909, is_triu=True, get_remove=True)
         print('corelated column:', len(gp[1]))
         for i in sorted(gp[1], reverse=True):
             column.pop(i)
@@ -64,7 +64,7 @@ def get_normalize_data(data, gogal_column=None):
     feature = data[gogal_column]
     ffe = normalize(feature.values)
     print(gogal_column)
-    print("final column: ", len(gogal_column))
+    print("Input gogal column: ", len(gogal_column))
     # plt_each_dis(ffe, 'nor.pdf')
     # plt_each_dis(feature.values, '0.pdf')
     gogal_column.append(data.columns.values.tolist()[-2])

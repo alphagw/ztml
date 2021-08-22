@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 
 def read_data_for_plt(fn):
@@ -37,9 +38,9 @@ def plt_fig1():
     ax2 = plt.subplot2grid((1, 22), (0, 10), colspan=1, rowspan=1,fig=fig)
     ax2.tick_params(axis='both', labelsize=tick_font_size)
     ax3 = plt.subplot2grid((1, 22), (0, 12), colspan=10, rowspan=1, fig=fig)
+    head_dir = r"G:\ztml\ztml\rdata\all_rmcoref_data"
 
-
-    csv_file = r'G:\ztml\ztml\data\temp_clean_data.csv'
+    csv_file = os.path.join(head_dir, r'temp_clean_data.csv')
     dd, columns = read_data_for_plt(csv_file)
     
     column = []
@@ -86,7 +87,7 @@ def plt_fig1():
     # ax.tick_params(axis='y', labelrotation=-45)
     ax.text(0.1, 66, 'A', fontdict=index_label_font)
     
-    csv_file = r'G:\ztml\ztml\data\normalized_data.csv'
+    csv_file = os.path.join(head_dir, r'normalized_data.csv')
     dd, columns = read_data_for_plt(csv_file)
     column = []
     for nn in columns:
@@ -133,7 +134,7 @@ def plt_fig1():
     plt.tight_layout()
     plt.subplots_adjust(left=0.05, bottom=0.1, top=0.95, right=0.98, wspace=1)
     # plt.show()
-    plt.savefig('plt_coref_fig1.tiff', dpi=600)
+    plt.savefig('plt_coref_fig1.pdf', dpi=600)
 
 
 if __name__ == '__main__':

@@ -20,7 +20,7 @@ def add_tempeture(data):
     tempeture = [str(i) for i in range(100, 700, 50)]
     t_index = ["nop_%sK", "%s_K"]
     new_ii = ["Nop", "ZT"]
-    share_label = [tl for tl in all_label if tl not in [ti%tm for tm in tempeture for ti in t_index]]
+    share_label = [tl for tl in all_label if tl not in [ti % tm for tm in tempeture for ti in t_index]]
     # share_label.remove('A1B2C4')
     
     copydata = deepcopy(data[share_label])
@@ -32,7 +32,7 @@ def add_tempeture(data):
         tmp_data.insert(tmp_data.shape[1], 'Temperature', tm)
     
         for ti in range(len(t_index)):
-            tmp_data.insert(tmp_data.shape[1], new_ii[ti], data[t_index[ti]%tm])
+            tmp_data.insert(tmp_data.shape[1], new_ii[ti], data[t_index[ti] % tm])
         
         num += 1
         
@@ -48,17 +48,20 @@ def change_np(data):
     # _tt = {"p": 1, "N": 0, "P": 1, "n": 0}
     for i in data.index.tolist():
         # data.loc[i, 'Type'] = _tt[data['Type'][i].strip()]
-        data.loc[i, 'Nop'] =  0 if data['Nop'][i] > 0 else 1
+        data.loc[i, 'Nop'] = 0 if data['Nop'][i] > 0 else 1
 
     return data
 
 
-def get_clean_data(new_data):
+def get_clean_data(new_data, is_nop_to_01=True):
     # 添加12个温度参数，并将所有温度对应的Kpa，N，ZT三个值添加上, 将70组数据扩展为840组数据
     add_t_data = add_tempeture(new_data)
     
     # 将P类型还是N类型半导体改成数值类型 P型：0  N型：1
-    fdata = change_np(add_t_data)
+    if is_nop_to_01:
+        fdata = change_np(add_t_data)
+    else:
+        fdata = add_t_data
 
     # 将Type列放置到倒数第2列，删除N_optimal列
     # columns = fdata.columns.tolist()
