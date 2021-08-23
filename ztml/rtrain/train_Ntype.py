@@ -15,10 +15,11 @@ import torch
 import torch.nn as nn
 from ztml.read_data import load_pmdata
 from matfleet.utilities import now_time
+import numpy as np
 
 
 class DNN(nn.Module):
-    DP_RADIO = 0.5
+    DP_RADIO = 0.2
     B_ININT = -0.0
 
     def __init__(self, n_feature, n_hidden, n_output, batch_normalize=True, dropout=True, activation=nn.ReLU()):
@@ -231,15 +232,16 @@ def run_train(nfeature, save_dir, head_dir):
     labels = ["3layer_100_relu", "3layer_100_sigmoid", "3layer_100_tanh",
               "3layer_100_relu_sgd", "4layer_100", "4layer_500"]
     activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(),
-                   nn.Sigmoid(), nn.Sigmoid(), nn.Sigmoid()]
+                   nn.Tanh(), nn.Tanh(), nn.Tanh()]
     hidden_layers = [[100, 50, 20], [100, 50, 20],
                      [100, 50, 20], [100, 50, 20],
                      [100, 100, 50, 20], [500, 100, 50, 20]]
     optimizers = ['Adam', 'Adam', 'Adam', 'SGD', 'SGD', 'SGD']
     epoches = [50, 500, 1000, 3000, 3000, 3000]
-    save_steps = [5, 10, 10, 10, 10, 10]
+    # save_steps = [5, 10, 10, 10, 10, 10]
+    save_steps = [1] * 6
     
-    for i in range(3, len(labels)):
+    for i in range(0, len(labels)):
     # for i in [1]:
         label = labels[i]
         activation = activations[i]
@@ -267,11 +269,11 @@ def run_t(nfeature, save_dir, head_dir):
     labels = ["3layer_100_relu", "3layer_100_sigmoid", "3layer_100_tanh",
               "3layer_100_relu_sgd", "4layer_100", "4layer_500"]
     activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(),
-                   nn.Sigmoid(), nn.Sigmoid(), nn.Sigmoid()]
+                   nn.Tanh(), nn.Tanh(), nn.Tanh()]
     hidden_layers = [[100, 50, 20], [100, 50, 20],
                      [100, 50, 20], [100, 50, 20],
                      [100, 100, 50, 20], [500, 100, 50, 20]]
-    nums = [15, 40, 10, 1600, 1180, 1740]
+    nums = [8, 20, 6, 138, 193, 208]
 
     for m in ['train_30_train.csv', 'train_30_test.csv', '10_for_check.csv']:
         for i in range(len(labels)):
@@ -287,6 +289,30 @@ def run_t(nfeature, save_dir, head_dir):
                                           zt=False, n_output=2)
         print('------')
 
+def find_best_step():
+    def read_mse_data(fn):
+        with open(fn, 'r') as f:
+            data = np.array([[float(m.split(':')[-1]) for m in i.split('|')] for i in f.readlines()])
+        return data
+    
+    save_dir = r'..\rtrain\final_ntype_training_module'
+    labels = ["3layer_100_relu", "3layer_100_sigmoid", "3layer_100_tanh",
+              "3layer_100_relu_sgd", "4layer_100", "4layer_500"]
+
+    for i in labels:
+        training_data = read_mse_data(os.path.join(save_dir, 'running_%s.log' % i))
+        tdata = training_data[1:,:]
+        ytrain = tdata[:, -2]
+        ytest = tdata[:, -1]
+
+        tmp_data = np.abs(ytrain - ytest)
+        tmp_data_min = np.sort(tmp_data)
+        print(tmp_data_min[:10])
+        print([np.where(tmp_data == i) for i in tmp_data_min[:10]])
+        # print(tmp_data[np.where(tmp_data == tmp_data_min)])
+        print('\n')
+    
+    
 if __name__ == '__main__':
     # save_dir = 'ntype_training_module'
     # nfeature = 28
@@ -296,4 +322,5 @@ if __name__ == '__main__':
     save_dirs = 'final_ntype_training_module'
     nfeatures = 11
     # run_train(nfeature=nfeatures, save_dir=save_dirs, head_dir=hdir)
+    # find_best_step()
     run_t(nfeature=nfeatures, save_dir=save_dirs, head_dir=hdir)

@@ -16,39 +16,6 @@ import os
 import scipy.stats
 
 
-def plt_mse(data, outfn):
-    # lv #3CAF6F
-    fig = plt.figure()
-    data = data[1:, :]
-    x = data[:, 0]
-    ytrain = data[:, -2]
-    ytest = data[:, -1]
-
-    left, bottom, width, height = 0.1, 0.1, 0.8, 0.8
-    ax1 = fig.add_axes([left, bottom, width, height])
-    ax1.plot(x, ytrain, c='#347FE2', linewidth=3.2)
-    ax1.plot(x, ytest, c='#F37878' ,linewidth=3.2)
-    ax1.set_xlim(-1, 300)
-    ax1.set_xlabel('Steps')
-    ax1.set_ylabel("Mean Square Error (MSE)")
-    left, bottom, width, height = 0.4, 0.4, 0.35, 0.35
-    ax2 = fig.add_axes([left, bottom, width, height])
-    ax2.plot(x, ytrain, c='#347FE2', linewidth=2.2)
-    ax2.plot(x, ytest, c='#F37878', linewidth=2.2)
-    
-    train_final_mean = np.mean(ytrain[3000:])
-    test_final_mean = np.mean(ytest[3000:])
-    ax2.plot(range(300, 5000), [train_final_mean]*(5000-300), 'r', linestyle='--', linewidth=2.2)
-    ax2.text(2000, 0.004, 'MSE=%.5f' % train_final_mean)
-    ax2.set_xlabel('Steps')
-    ax2.set_ylabel('MSE')
-    ax2.set_xlim(300, 5000)
-    ax2.set_ylim(0, 0.01)
-    ax2.set_xticks([300, 1000, 2000, 3000, 4000, 5000])
-    
-    plt.savefig(outfn)
-
-
 def read_mse_data(fn):
     with open(fn, 'r') as f:
         data = np.array([[float(m.split(':')[-1]) for m in i.split('|')] for i in f.readlines()])
@@ -60,11 +27,6 @@ def read_cal_predit(fn):
         data = np.array([i.split() for i in f.readlines()[0:]], dtype=np.float)
     return data
     
-    
-def run_mse(fn, outfn):
-    dd = read_mse_data(fn)
-    plt_mse(dd, outfn)
-
 
 def plt_result(predict_data, training_data, text=None, save_fn=None, show=False):
     
@@ -73,23 +35,22 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
     # predict_data.insert(2, a0)
     # training_data.insert(2, t0)
     
-    label_font = {"fontsize": 14, 'family': 'Times New Roman'}
+    label_font = {"fontsize": 16, 'family': 'Times New Roman'}
     legend_font = {"fontsize": 12, 'family': 'Times New Roman'}
-    tick_font_size = 12
-    tick_font_dict = {"fontsize": 12, 'family': 'Times New Roman'}
-    index_label_font = {"fontsize": 20, 'weight': 'bold', 'family': 'Times New Roman'}
-    pindex = ['A', 'B', 'C', 'D', 'E', 'F']
-    _xwd, _ywd = 0.118, 0.12
-    sax = [[0.18098039215686275 + 0.020, 0.60, _xwd, _ywd],
-           [0.49450980392156866 + 0.035, 0.60, _xwd, _ywd],
-           [0.82803921568627460 + 0.035, 0.60, _xwd, _ywd],
-           [0.18098039215686275 + 0.020, 0.11, _xwd, _ywd],
-           [0.49450980392156866 + 0.035, 0.11, _xwd, _ywd],
-           [0.82803921568627460 + 0.035, 0.11, _xwd, _ywd]]
+    tick_font_dict = {"fontsize": 14, 'family': 'Times New Roman'}
+    index_label_font = {"fontsize": 18, 'weight': 'normal', 'family': 'Times New Roman'}
+    pindex = ['(a)', '(b)', '(c)', '(d)', '(e)', '(f)']
+    _xwd, _ywd = 0.168, 0.08
+    sax = [[0.305 + 0.02, 0.73, _xwd-0.015, _ywd],
+           [0.800 + 0.004, 0.73, _xwd, _ywd],
+           [0.305 + 0.01, 0.41, _xwd, _ywd],
+           [0.800 + 0.019, 0.41, _xwd-0.01, _ywd],
+           [0.305 + 0.0, 0.078, _xwd, _ywd],
+           [0.800 + 0.0, 0.078, _xwd, _ywd]]
 
-    nrow = 2
-    ncol = 3
-    fig, axes = plt.subplots(nrow, ncol, figsize=(9, 6))
+    nrow = 3
+    ncol = 2
+    fig, axes = plt.subplots(nrow, ncol, figsize=(9, 11))
     plt.rc('font', family='Times New Roman', weight='normal')
     plt.rcParams["xtick.direction"] = 'in'
     plt.rcParams["ytick.direction"] = 'in'
@@ -104,21 +65,27 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         pd1 = predict_data[i]
         ax.scatter(pd1[:, 0], pd1[:, 1], edgecolors='white', color='#347FE2', linewidths=0.2)
         slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(pd1[:, 0], pd1[:, 1])
-        slice_set = 0.0, 1.25
+        rmse = np.sqrt(np.mean(np.square(pd1[:, 0] - pd1[:, 1])))
+
+        if 1 <= i <= 2:
+            slice_set = -0.3, 1.25
+            ax.text(-0.25, 0.72, text[i] % (r_value**2, rmse), fontdict=legend_font)
+            ax.text(-0.25, 1.3, pindex[i], fontdict=index_label_font)
+        else:
+            slice_set = -0.1, 1.25
+            ax.text(-0.05, 0.8, text[i] % (r_value**2, rmse), fontdict=legend_font)
+            ax.text(-0.05, 1.3, pindex[i], fontdict=index_label_font)
+
         _tmp_xy = np.linspace(slice_set, pd1.shape[0])
         ax.plot(_tmp_xy, _tmp_xy, '#F37878', linewidth=3, alpha=0.8)
         ax.set_xlim(slice_set)
         ax.set_ylim(slice_set)
         ax.set_xlabel("Calculated", fontdict=label_font)
         ax.set_ylabel("Predicted", fontdict=label_font)
-        if i > 3:
-            ax.text(0.05, 0.9, text[i] % r_value**2, fontdict=legend_font)
-        else:
-            ax.text(0.10, 0.9, text[i]% r_value**2, fontdict=legend_font)
 
-        ax.text(0.01, 1.3, pindex[i], fontdict=index_label_font)
         ax.set_xticklabels([round(i, 2) for i in ax.get_xticks()], tick_font_dict)
         ax.set_yticklabels([round(i, 2) for i in ax.get_yticks()], tick_font_dict)
+        ax.tick_params(axis='both', direction='in')
         # ax.tick_params(axis='both', labelsize=tick_font_size)
         d = ax.get_position()
         print(i, d)
@@ -131,41 +98,53 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         # left, bottom, width, height = d.x0 + d.width * 1/ncol, d.y0+0.12/nrow, 0.125, 0.12
         left, bottom, width, height = sax[i]
         
-        if i == 3:
-            left = left + 0.017
-            width = width - 0.01
-            train_final_mean = np.mean(ytrain[:4000])
-            test_final_mean = np.mean(ytest[:4000])
-        else:
-            left = left
-            width = width
-            train_final_mean = np.mean(ytrain[2500:])
-            test_final_mean = np.mean(ytest[2500:])
-
         ax2 = fig.add_axes([left, bottom, width, height])
         ax2.plot(tx, ytrain, c='#347FE2', linewidth=1.2, label='train')
         ax2.plot(tx, ytest, c='#F37878', linewidth=1.2, label='test')
-        if i >= 3:
-            ax2.set_xlim(-120, 12000)
+        if i == 0:
+            train_final_mean = np.mean(ytrain[200:2500])
+            test_final_mean = np.mean(ytest[200:2500])
+            ax2.set_xlim(-80, 3000)
+            ax2.set_ylim(-0.001, 0.05)
+            ax2.text(800, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean), fontdict=legend_font)
+            ax2.set_yticks([0.0, 0.1])
+        elif i == 1:
+            train_final_mean = np.mean(ytrain[500:2500])
+            test_final_mean = np.mean(ytest[500:2500])
+            ax2.set_xlim(-80, 3000)
+            ax2.set_ylim(-0.001, 0.1)
+            ax2.text(800, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean), fontdict=legend_font)
+            ax2.set_yticks([0.0, 0.1])
+        elif i == 2:
+            train_final_mean = np.mean(ytrain[500:2500])
+            test_final_mean = np.mean(ytest[500:2500])
+            ax2.set_xlim(-80, 3000)
             ax2.set_ylim(-0.001, 0.2)
-            ax2.text(2000, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
+            ax2.text(800, 0.09, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean), fontdict=legend_font)
+            ax2.set_yticks([0.0, 0.2])
+        elif i >= 3:
+            train_final_mean = np.mean(ytrain[8000:12000])
+            test_final_mean = np.mean(ytest[8000:12000])
+            ax2.set_xlim(-200, 12000)
+            ax2.set_ylim(-0.001, 0.15)
+            ax2.text(3000, 0.08, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean), fontdict=legend_font)
+            ax2.set_yticks([0.0, 0.15])
 
-        elif (i == 1) or (i == 0):
-            ax2.set_xlim(-120, 3000)
-            ax2.set_ylim(-0.001, 0.2)
-            ax2.text(1000, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
-        else:
-            ax2.set_xlim(-120, 3000)
-            ax2.set_ylim(-0.001, 0.2)
-            ax2.text(1000, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
+        # else:
+        #     train_final_mean = np.mean(ytrain[:4000])
+        #     test_final_mean = np.mean(ytest[:4000])
+        #     ax2.set_xlim(-120, 3000)
+        #     ax2.set_ylim(-0.001, 0.2)
+        #     ax2.text(1000, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean))
 
         
-        ax2.set_ylabel('MSE')
+        ax2.set_ylabel('MSE', labelpad=-12, fontdict=legend_font)
         # ax2.set_xlabel('Steps')
-        ax2.legend(fontsize=8)
+        # ax2.legend(fontsize=8)
         # plt.xticks([])
         # plt.yticks([])
-        plt.tight_layout()
+        # plt.tight_layout()
+    plt.subplots_adjust(left=0.08, bottom=0.06, right=0.98, top=0.96, wspace=0.21, hspace=0.26)
 
     if save_fn is not None:
         plt.savefig(save_fn, dpi=600)
@@ -179,12 +158,12 @@ if __name__ == '__main__':
     # label = 'run1'
     save_dir = r'..\rtrain\final_training_module'
     # run_mse(os.path.join(save_dir, 'running_%s.log' % label), 'training_%s.pdf' % label)
-    text = ["Activation        : Relu\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Sigmod\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Tanh\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Relu\nOptimizer        : SGD\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Relu\nOptimizer        : Adam\nHidden Layers : [100, 100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Relu\nOptimizer        : Adam\nHidden Layers : [500, 100, 50, 20]\nR-squared(R2) : %.5f"]
+    text = ["Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : Adam\nRMSE: %.5f",
+            "Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Sigmod\nOptimizer     : Adam\nRMSE: %.5f",
+            "Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Tanh\nOptimizer     : Adam\nRMSE: %.5f",
+            "Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : SGD\nRMSE: %.5f",
+            "Hidden Layers : [100, 100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : Adam\nRMSE: %.5f",
+            "Hidden Layers : [500, 100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : Adam\nRMSE: %.5f"]
     for i in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
     # for i in ['train_30_test.csv', 'train_30_train.csv', 'valid_40.csv']:
         predict_data, training_data = [], []
@@ -206,7 +185,7 @@ if __name__ == '__main__':
             predict_data.append(read_cal_predit(output_fn))
             print(training_fn, output_fn)
         save_fn = 'plt_%s_fig2train.pdf' % i
-        plt_result(predict_data, training_data, text, save_fn=None, show=True)
+        plt_result(predict_data, training_data, text, save_fn='plt_fig2.jpg', show=True)
         # plt_result(predict_data, training_data, text, save_fn=save_fn, show=False)
 
         exit()

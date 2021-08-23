@@ -35,10 +35,10 @@ def use_ml_to_predict_zt(head_dir, fname, has_t=True):
 def cel_use_ml_to_predict_ntype(head_dir, fname, has_t=True):
     save_dir = r'..\rtrain\final_ntype_training_module'
     nfeature = 11
-    hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
-    label = '3layer_100_relu_sgd'  # '3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
-    activation = nn.Sigmoid()
-    num = 1600
+    hidden_layer = [100, 100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
+    label = '4layer_100'  # '3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
+    activation = nn.Tanh()
+    num = 193
     
     cross_entropyloss_ntype_ttest(test_csv_fn=os.path.join(head_dir, fname),
                 mp_fn=os.path.join(save_dir, 'dnn_params_%d_%s.pkl' % (num, label)),

@@ -121,3 +121,4 @@ data_batch*
 batches.meta
 test_batch
 readme.html
+*.pkl

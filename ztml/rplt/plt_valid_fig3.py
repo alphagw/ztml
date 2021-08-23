@@ -37,14 +37,16 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
     origin_data = dict(zip(__tmp_ori2, __tmp_ori1))
     # print(origin_data)
 
-    label_font = {"fontsize": 16, 'family': 'Times New Roman'}
+    label_font = {"fontsize": 14, 'family': 'Times New Roman'}
     tick_font_size = 14
     index_label_font = {"fontsize": 20, 'weight': 'bold', 'family': 'Times New Roman'}
     tick_font_dict = {"fontsize": tick_font_size, 'family': 'Times New Roman'}
     # lv #3CAF6F
-    plt.figure(figsize=(16, 8))
+    plt.figure(figsize=(12, 6))
     plt.rc('font', family='Times New Roman', weight='normal')
-    ax = plt.subplot2grid((12, 2), (0, 0), colspan=1, rowspan=9)
+    plt.rcParams["xtick.direction"] = 'in'
+    plt.rcParams["ytick.direction"] = 'in'
+    ax = plt.subplot2grid((27, 2), (0, 0), colspan=1, rowspan=17)
     # fig, axes = plt.subplots(3, 2, figsize=(16, 8))
     # ax = axes[0]
     pd1 = gather_data(fn)
@@ -71,34 +73,38 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
     ax.set_ylim(slice_set)
     ax.set_xlabel("Calculated", fontdict=label_font)
     ax.set_ylabel("Predicted", fontdict=label_font)
-    ax.text(0.01, 1.01, "A", fontdict=index_label_font)
-    ax.text(0.15, 0.8, "R-squared(R2): %.5f" % r_value**2, fontdict=label_font)
+    ax.tick_params(labelsize=tick_font_size)
+    ax.text(0.01, 1.02, "(a)", fontdict=index_label_font)
+    # ax.text(0.15, 0.8, "R-squared(R2): %.5f\n" % r_value**2, fontdict=label_font)
     mse = np.mean(np.square(pd1[:, 0] - pd1[:, 1]))
     rmse = np.sqrt(np.mean(np.square(pd1[:, 0] - pd1[:, 1])))
-    print(rmse, mse)
-    ax.text(0.15, 0.75, "MSE: %.5f" % mse, fontdict=label_font)
-    ax.text(0.15, 0.7, "RMSE: %.5f" % rmse, fontdict=label_font)
+    ax.text(0.12, 0.7, "R-squared(R2): %.5f\nMSE: %.5f\nRMSE: %.5f\n" % (r_value**2, mse, rmse), fontdict=label_font)
+    # ax.text(0.15, 0.7, "RMSE: %.5f\n" % rmse, fontdict=label_font)
     labels = [str(i)+'K' for i in c12.keys()]
     handles = [plt.Circle((0, 0), 1, color=c12[int(label[:-1])]) for label in labels]
     ax.legend(handles, labels, ncol=3, loc='lower right')
     # ax.text(-0.175, 1.2, pindex[i], fontsize=12)
     plt.subplots_adjust(hspace=0.3)
+    wrong_num = 0
     
     if (ntype1 is not None) and (ntype2 is not None) and (fn2 is not None):
         npd1 = read_cal_predit(ntype1)
-        ax0 = plt.subplot2grid((12, 2), (10, 0), colspan=1, rowspan=2)
+        ax0 = plt.subplot2grid((27, 2), (20, 0), colspan=1, rowspan=7)
         for i in range(npd1.shape[0]):
             symbol = origin_data[round(npd1[i][-1], 5)]
             ax0.scatter(i, npd1[i][0], edgecolors='white', color='#3CAF6F', alpha=0.8, linewidths=0.2, s=90)
             ax0.scatter(i, aa(npd1[i][1]), edgecolors='white', color='darkorange', alpha=0.8, linewidths=0.2, s=90)
-    
+            if aa(npd1[i][0]) != aa(npd1[i][1]):
+                wrong_num += 1
+        
+        ax0.text(10, 0.45, 'Accuracy: %.3f' % ((1 - wrong_num / npd1.shape[0]) * 100) + '%', fontdict=tick_font_dict)
         ax0.set_xlim(-2, 122)
         ax0.set_ylim(-0.2, 1.2)
         colors = {'Calculated': '#3CAF6F', 'Predicted': 'darkorange'}
         labels = list(colors.keys())
         handles = [plt.Rectangle((0, 0), 1, 1, color=colors[label]) for label in labels]
         ax0.legend(handles, labels, ncol=2)
-        ax0.text(0, 1.3, "B", fontdict=index_label_font)
+        ax0.text(0, 1.35, "(b)", fontdict=index_label_font)
         # ax0.set_yticklabels({0: 'Ntype', 1:'Ptype'})
         ax0.set_yticks([0, 1])
         ax0.set_yticklabels(['N-type', 'P-type'])
@@ -123,9 +129,9 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
         # dd = pd.DataFrame(dd.values, index=None, columns=dd.columns.values)
         def get_color(data):
             return ['#F37878' if data[i] > 0.5 else '#347FE2' for i in range(data.shape[0])]
-        
+        start_x = [0, 7, 14, 21]
         for i in range(len(txt_label)):
-            ax2 = plt.subplot2grid((12, 2), (3*i, 1), colspan=1, rowspan=3)
+            ax2 = plt.subplot2grid((27, 2), (start_x[i], 1), colspan=1, rowspan=6)
             _tsd = deepcopy(dd[i])
             data = dd[i].groupby(["V1"])
             __new_ddd = []
@@ -160,13 +166,16 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
             ax2.set_ylim(0, 1.1)
     
             if i == 1:
-                ax2.tick_params(axis='x', labelsize=tick_font_size-3)
+                ax2.tick_params(axis='x', labelsize=tick_font_size-2, rotation=15)
+                ax2.tick_params(axis='y', labelsize=tick_font_size)
+            elif i == 3:
+                ax2.tick_params(axis='x', labelsize=tick_font_size-1, rotation=10)
                 ax2.tick_params(axis='y', labelsize=tick_font_size)
             else:
                 ax2.tick_params(axis='both', labelsize=tick_font_size)
     
             if i == 0:
-                ax2.text(0, 1.13, 'C', fontdict=index_label_font)
+                ax2.text(0, 1.16, '(c)', fontdict=index_label_font)
                 colors = {'N-type': '#F37878', 'P-type': '#347FE2'}
                 labels = list(colors.keys())
                 handles = [plt.Rectangle((0, 0), 1, 1, color=colors[label]) for label in labels]
@@ -179,8 +188,8 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
                 ax2.text(1, 0.85, txt_label[i], fontdict=label_font)
     
             
-    plt.tight_layout()
-    plt.subplots_adjust(left=0.05,bottom=0.08, right=0.98, top=0.95, hspace=0.9, wspace=0.2)
+    # plt.tight_layout()
+    plt.subplots_adjust(left=0.06, bottom=0.08, right=0.98, top=0.95, hspace=1, wspace=0.1)
     plt.savefig('plt_valid_fig3.pdf', dpi=600)
     # plt.show()
 
