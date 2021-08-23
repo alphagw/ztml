@@ -10,11 +10,12 @@ __maintainer__ = 'Guanjie Wang'
 __email__ = "gjwang@buaa.edu.cn"
 __date__ = '2021/06/10 16:39:37'
 
-from ztml.tools import get_random_groupby_index
+from ztml.tools import get_random_groupby_index, norepeat_randint
 from ztml.data.feature_normalize_data import get_normalize_data
 
 from ztml.rdata.clean_csv_data import get_clean_data, read_data
 from ztml.rdata.rename_cloumn import get_rename_column_data
+from copy import deepcopy
 
 
 def read_rename_clean_datafile():
@@ -72,23 +73,30 @@ def run_compounds_split(fn, head_dir, is_nop_to_01=True):
     #                                                                         'MAv', 'LAC', 'LBC', 'LAv',
     #                                                                         'Temperature'])
     normalized_data, _ = get_normalize_data(clean_train_data)
+    __rm_point_columns(normalized_data).to_csv(os.path.join(head_dir, 'normalized_data.csv'), index=False)
     # normalized_data = read_data('normalized_data.csv')
     # 根据总原子（化合物）将数据分为30个训练和40个验证集
+    # 实际Excel中的Index值
+    # valid_index = [1, 2, 3, 5, 11, 14, 20, 22, 27, 29, 30, 32, 35, 37, 38, 41, 43, 44, 45, 49,
+    #                50, 51, 52, 54, 56, 58, 59, 64, 65, 67]
+    check_index = [12, 18, 21, 26, 34, 36, 39, 53, 60, 69]
+    train_index = [4, 6, 7, 8, 9, 10, 13, 15, 16, 17, 19, 23, 24, 25, 28, 31, 33, 40, 42, 46, 47, 48,
+                   55, 57, 61, 62, 63, 66, 68, 70]
     use2train_data, use2valid_data = get_random_groupby_index(normalized_data, column_index=['Index'],
-                                                              ratio=4/7, to_data=True)
-    
+                                                              ratio=3/7, to_data=True, train_index=train_index)
+    print(use2train_data.shape, use2valid_data.shape)
     # 将训练及在次分为训练集和测试集
     train_train_data, train_test_data = get_random_groupby_index(use2train_data, column_index=['Index'],
-                                                                 ratio=0.3, to_data=True)
+                                                                 ratio=0.7, to_data=True)
     print(train_train_data.shape, train_test_data.shape)
     
     valid_10data, valid_30data = get_random_groupby_index(use2valid_data, column_index=['Index'],
-                                                          ratio=0.75, to_data=True)
+                                                          ratio=0.25, to_data=True, train_index=check_index)
     print(valid_10data.shape, valid_30data.shape)
     
     print("Final features: %d" % (train_train_data.shape[1] - 3))
     # 输出数据
-    __rm_point_columns(normalized_data).to_csv(os.path.join(head_dir, 'normalized_data.csv'), index=False)
+    # __rm_point_columns(normalized_data).to_csv(os.path.join(head_dir, 'normalized_data.csv'), index=False)
     __rm_point_columns(train_train_data).to_csv(os.path.join(head_dir, 'train_30_train.csv'), index=False)
     __rm_point_columns(train_test_data).to_csv(os.path.join(head_dir, 'train_30_test.csv'), index=False)
     __rm_point_columns(valid_10data).to_csv(os.path.join(head_dir, '10_for_check.csv'), index=False)

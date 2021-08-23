@@ -177,19 +177,22 @@ if __name__ == '__main__':
     # fn, ofn = r"training_module/out_run3.train", 'train.pdf'
     # fn, ofn = r"training_module/out_run3.test", 'test.pdf'
     label = 'run1'
-    save_dir = r'..\rtrain\3ntype_training_module'
+    save_dir = r'..\rtrain\final_ntype_training_module'
     # run_mse(os.path.join(save_dir, 'running_%s.log' % label), 'training_%s.pdf' % label)
     text = ["Activation : Relu\nOptimizer : Adam\nHidden Layers :\n[100, 50, 20]",
-            "Activation : Tanh\nOptimizer : Adam\nHidden Layers :\n[100, 50, 20]",
-            "Activation : Sigmod\nOptimizer : Adam\nHidden Layers :\n[100, 50, 20]",
+            "Activation : Relu\nOptimizer : SGD\nHidden Layers :\n[100, 50, 20]",
             "Activation : Sigmod\nOptimizer : SGD\nHidden Layers :\n[100, 50, 20]",
-            "Activation : Sigmod\nOptimizer : Adam\nHidden Layers :\n[100, 100, 50, 20]",
-            "Activation : Sigmod\nOptimizer : Adam\nHidden Layers :\n[500, 100, 50, 20]"]
+            "Activation : Tanh\nOptimizer : SGD\nHidden Layers :\n[100, 50, 20]",
+            "Activation : Tanh\nOptimizer : SGD\nHidden Layers :\n[100, 100, 50, 20]",
+            "Activation : Tanh\nOptimizer : SGD\nHidden Layers :\n[500, 100, 50, 20]"]
+    labels = ["3layer_100", "3layer_100_sigmod",
+              "3layer_100_tanh", "3layer_100_sgd",
+              "4layer_100", "4layer_500"]
+    
     for i in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
         predict_data, training_data = [], []
         # for label in ['3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500']:
-        for label in ["3layer_100", "3layer_100_sgd", "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh",
-                      "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh"]: #'3layer_100_Elu', '3layer_100_PRelu',
+        for label in labels:
             training_fn = os.path.join(save_dir, 'running_%s.log' % label)
             training_data.append(read_mse_data(training_fn))
 

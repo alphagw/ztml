@@ -89,8 +89,10 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
 
     nrow = 2
     ncol = 3
-    fig, axes = plt.subplots(nrow, ncol, figsize=(14, 8))
+    fig, axes = plt.subplots(nrow, ncol, figsize=(9, 6))
     plt.rc('font', family='Times New Roman', weight='normal')
+    plt.rcParams["xtick.direction"] = 'in'
+    plt.rcParams["ytick.direction"] = 'in'
     axes = axes.flatten()
     
     assert axes.shape[0] == len(predict_data) == len(training_data)
@@ -175,22 +177,27 @@ if __name__ == '__main__':
     # fn, ofn = r"training_module/out_run3.train", 'train.pdf'
     # fn, ofn = r"training_module/out_run3.test", 'test.pdf'
     # label = 'run1'
-    save_dir = r'..\rtrain\5training_module'
+    save_dir = r'..\rtrain\final_training_module'
     # run_mse(os.path.join(save_dir, 'running_%s.log' % label), 'training_%s.pdf' % label)
     text = ["Activation        : Relu\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
+            "Activation        : Sigmod\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
+            "Activation        : Tanh\nOptimizer        : Adam\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
             "Activation        : Relu\nOptimizer        : SGD\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Sigmod\nOptimizer        : SGD\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Tanh\nOptimizer        : SGD\nHidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Relu\nOptimizer        : SGD\nHidden Layers : [100, 100, 50, 20]\nR-squared(R2) : %.5f",
-            "Activation        : Relu\nOptimizer        : SGD\nHidden Layers : [500, 100, 50, 20]\nR-squared(R2) : %.5f"]
-    for i in ['train_30_test.csv', 'train_30_train.csv', 'valid_40.csv']:
-    # for i in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
+            "Activation        : Relu\nOptimizer        : Adam\nHidden Layers : [100, 100, 50, 20]\nR-squared(R2) : %.5f",
+            "Activation        : Relu\nOptimizer        : Adam\nHidden Layers : [500, 100, 50, 20]\nR-squared(R2) : %.5f"]
+    for i in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
+    # for i in ['train_30_test.csv', 'train_30_train.csv', 'valid_40.csv']:
         predict_data, training_data = [], []
         # for label in ['3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500']:
         # for label in ['3layer_100', '3layer_100_sigmod', '3layer_100_Tanh',
         #               '3layer_100_sgd', '4layer_100', '4layer_500']: #'3layer_100_Elu', '3layer_100_PRelu',
-        labels = ["3layer_100_adam", "3layer_100_sgd", "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh",
-                  "4layer_100_sgd", "4layer_500_sgd"]
+        # labels = ["3layer_100_adam", "3layer_100_sgd", "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh",
+        #           "4layer_100_sgd", "4layer_500_sgd"]
+
+        labels = ["3layer_100_relu", "3layer_100_sigmoid",
+                  "3layer_100_tanh", "3layer_100_relu_sgd",
+                  "4layer_100", "4layer_500"]
+
         for label in labels: #'3layer_100_Elu', '3layer_100_PRelu',
             training_fn = os.path.join(save_dir, 'running_%s.log' % label)
             training_data.append(read_mse_data(training_fn))
@@ -199,7 +206,7 @@ if __name__ == '__main__':
             predict_data.append(read_cal_predit(output_fn))
             print(training_fn, output_fn)
         save_fn = 'plt_%s_fig2train.pdf' % i
-        # plt_result(predict_data, training_data, text, save_fn=None, show=True)
-        plt_result(predict_data, training_data, text, save_fn=save_fn, show=False)
+        plt_result(predict_data, training_data, text, save_fn=None, show=True)
+        # plt_result(predict_data, training_data, text, save_fn=save_fn, show=False)
 
         exit()

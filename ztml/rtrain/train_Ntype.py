@@ -11,7 +11,6 @@ __email__ = "gjwang@buaa.edu.cn"
 __date__ = '2019/11/08 15:36:27'
 
 import os
-import math
 import torch
 import torch.nn as nn
 from ztml.read_data import load_pmdata
@@ -29,7 +28,7 @@ class DNN(nn.Module):
         self.ACTIVATION = activation
         self.do_bn = batch_normalize
         self.do_dp = dropout
-        self.fcs , self.bns, self.dps = [], [], []
+        self.fcs, self.bns, self.dps = [], [], []
         
         self.bn_input = nn.BatchNorm1d(n_feature, momentum=0.5)
         self.n_hidden = [n_feature] + n_hidden
@@ -61,8 +60,10 @@ class DNN(nn.Module):
         # if self.do_bn: x = self.bn_input(x)
         for i in range(len(self.n_hidden) - 1):
             x = self.fcs[i](x)
-            if self.do_bn: x = self.bns[i](x)
-            if self.do_dp: x = self.dps[i](x)
+            if self.do_bn:
+                x = self.bns[i](x)
+            if self.do_dp:
+                x = self.dps[i](x)
             x = self.ACTIVATION(x)
         
         x = self.predict(x)
@@ -78,24 +79,30 @@ def do_time():
     return now_time().replace(' ', '_').replace('-', '_').replace(':', '_')
 
 
-def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True, save_dir='', zt=False, label='1',
-          head_dir=r"..\\rdata\\",
-          n_feature = 34, HIDDEN_NODES = [100, 50, 50, 20], activation=nn.ReLU(), optimizer='Adam', n_output=1):
+def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
+          save_dir='', zt=True, label='1', head_dir=r"..\\rdata\\",
+          n_feature=34, hidden_nodes=None, activation=nn.ReLU(), optimizer='Adam',
+          save_module=True, save_step=100, n_output=1):
     
     if os.path.isdir(save_dir):
         pass
     else:
         os.mkdir(save_dir)
-    
+   
+    if hidden_nodes is None:
+        hidden_nodes = [100, 50, 50, 20]
+
     train_csv_fn = os.path.join(head_dir, 'train_30_train.csv')
     test_csv_fn = os.path.join(head_dir, 'train_30_test.csv')
     train_pmdata_loader = load_pmdata(csv_file=train_csv_fn, shuffle=True, zt=zt, batch_size=588)
     test_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=True, zt=zt, batch_size=252)
     
     if cuda:
-        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=n_output, batch_normalize=True, dropout=True, activation=activation).cuda()
+        dnn = DNN(n_feature=n_feature, n_hidden=hidden_nodes, n_output=n_output, batch_normalize=True,
+                  dropout=True, activation=activation).cuda()
     else:
-        dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=n_output, batch_normalize=True, dropout=True, activation=activation)
+        dnn = DNN(n_feature=n_feature, n_hidden=hidden_nodes, n_output=n_output, batch_normalize=True,
+                  dropout=True, activation=activation)
     
     if restore:
         dnn.load_state_dict(torch.load(module_params_fn))
@@ -118,9 +125,9 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
 
     for ep in range(epoch):
         epoch = ep + 1
-        # if epoch % 1500 == 0:
-        #     lr = lr * 0.5
-        #     adjust_learning_rate(optimizer, lr)
+        if epoch % 2000 == 0:
+            lr = lr * 0.5
+            adjust_learning_rate(optimizer, lr)
 
         for step, (b_x, b_y) in enumerate(train_pmdata_loader):
             # input_data = torch.DoubleTensor(b_x)
@@ -156,9 +163,6 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
             txt_temple = 'Epoch: {0} | Step: {1} | train loss: {2:.12f} | test loss: {3:.12f}'.format(epoch, step, loss.cpu().data.numpy(), test_loss.cpu().data.numpy())
             print(txt_temple)
             # now_step = step + epoch * math.ceil(TOTAL_LINE / BATCH_SIZE)
-            save_module = True
-            save_step = 1000
-
 
             if epoch == 0:
                 write(tfn, txt_temple, 'w')
@@ -167,55 +171,21 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
                 write(tfn, txt_temple, 'a')
                 
             if save_module:
-                if epoch  % save_step == 0:
+                if epoch % save_step == 0:
                     torch.save(dnn, os.path.join(save_dir, 'dnn_%d_%s.pkl' % (epoch, label)))
                     torch.save(dnn.state_dict(), os.path.join(save_dir, 'dnn_params_%d_%s.pkl' % (epoch, label)))
 
 
-def ntype_ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34, shuffle=False,
-          HIDDEN_NODES=[100, 50, 50, 20], activation=nn.ReLU(), batch_size=252, zt=False, n_output=1, has_t=None):
+def cross_entropyloss_ntype_ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34, shuffle=False,
+                                  hidden_nodes=None, activation=nn.ReLU(), batch_size=252, zt=False,
+                                  n_output=1, has_t=None):
     # csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
     # test_csv_fn = r'G:\ztml\ztml\data\test_data_from_normalized_data.csv'
-    train_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=shuffle, batch_size=batch_size, zt=zt)
-
-    dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=n_output, batch_normalize=True, dropout=True,
-              activation=activation)
-
-    dnn.load_state_dict(torch.load(mp_fn))
-    loss_func = nn.MSELoss()
-    
-    for step, (b_x, b_y) in enumerate(train_pmdata_loader):
-        b_x, b_y = b_x, b_y
-        dnn.eval()
-        output = dnn(b_x.float())
-        
-        label_y = b_y.reshape(-1, 1)
-        loss = loss_func(output, label_y.float())
-        # print('loss: ', loss.data.numpy(), 'label_y: ', label_y.data.numpy(), 'predict_y: ', output.data.numpy())
-        print('loss: ', loss.data.numpy())
-        with open(os.path.join(save_dir, output_fn), 'w') as f:
-            for i in range(len(label_y.data.numpy())):
-                if has_t:
-                    if has_t is not None:
-                        f.write("%.7f     %.7f      %s\n" % (label_y.data.numpy()[i][0], output.data.numpy()[i][0],
-                                                             '  '.join([str(b_x.data.numpy()[i][m]) for m in has_t])))
-                    else:
-                        f.write("%.7f     %.7f\n" % (label_y.data.numpy()[i][0], output.data.numpy()[i][0]))
-                else:
-                    f.write("%.7f     %.7f\n" % (label_y.data.numpy()[i][0], output.data.numpy()[i][0]))
-                print(label_y.data.numpy()[i][0], '   ', output.data.numpy()[i][0])
-        
-        # if step == 10:
-        #     break
-
-
-def CrossEntropyLoss_ntype_ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', n_feature=34, shuffle=False,
-                HIDDEN_NODES=[100, 50, 50, 20], activation=nn.ReLU(), batch_size=252, zt=False, n_output=1, has_t=None):
-    # csv_fn = r'G:\ztml\ztml\data\clean_data_normalized.csv'
-    # test_csv_fn = r'G:\ztml\ztml\data\test_data_from_normalized_data.csv'
+    if hidden_nodes is None:
+        hidden_nodes = [100, 50, 50, 20]
     train_pmdata_loader = load_pmdata(csv_file=test_csv_fn, shuffle=shuffle, batch_size=batch_size, zt=zt)
     
-    dnn = DNN(n_feature=n_feature, n_hidden=HIDDEN_NODES, n_output=n_output, batch_normalize=True, dropout=True,
+    dnn = DNN(n_feature=n_feature, n_hidden=hidden_nodes, n_output=n_output, batch_normalize=True, dropout=True,
               activation=activation)
     
     dnn.load_state_dict(torch.load(mp_fn))
@@ -243,17 +213,14 @@ def CrossEntropyLoss_ntype_ttest(test_csv_fn, mp_fn, save_dir='', output_fn='', 
                 if has_t:
                     if has_t is not None:
                         f.write("%.7f     %.7f      %s\n" % (
-                        label_y.data.numpy()[i][0], change_output(output.data.numpy()[i]),
-                        '  '.join([str(b_x.data.numpy()[i][m]) for m in has_t])))
+                            label_y.data.numpy()[i][0], change_output(output.data.numpy()[i]),
+                            '  '.join([str(b_x.data.numpy()[i][m]) for m in has_t])))
                     else:
                         f.write("%.7f     %.7f\n" % (label_y.data.numpy()[i][0], change_output(output.data.numpy()[i])))
                 else:
                     f.write("%.7f     %.7f\n" % (label_y.data.numpy()[i][0], change_output(output.data.numpy()[i])))
-                print(label_y.data.numpy()[i][0], '   ', change_output(output.data.numpy()[i]))
+                # print(label_y.data.numpy()[i][0], '   ', change_output(output.data.numpy()[i]))
         
-        # if step == 10:
-        #     break
-
 
 def write(fn, content, mode='w'):
     with open(fn, mode) as f:
@@ -261,25 +228,26 @@ def write(fn, content, mode='w'):
 
 
 def run_train(nfeature, save_dir, head_dir):
+    labels = ["3layer_100_relu", "3layer_100_sigmoid", "3layer_100_tanh",
+              "3layer_100_relu_sgd", "4layer_100", "4layer_500"]
+    activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(),
+                   nn.Sigmoid(), nn.Sigmoid(), nn.Sigmoid()]
+    hidden_layers = [[100, 50, 20], [100, 50, 20],
+                     [100, 50, 20], [100, 50, 20],
+                     [100, 100, 50, 20], [500, 100, 50, 20]]
+    optimizers = ['Adam', 'Adam', 'Adam', 'SGD', 'SGD', 'SGD']
+    epoches = [50, 500, 1000, 3000, 3000, 3000]
+    save_steps = [5, 10, 10, 10, 10, 10]
     
-    labels = ["3layer_100", "3layer_100_sgd", "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh"] #, "4layer_100", "4layer_500"
-    activations = [nn.ReLU(), nn.ReLU(), nn.Sigmoid(), nn.Tanh()] # , nn.Sigmoid(), nn.Sigmoid()
-    hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20]] # , [100, 100, 50, 20], [500, 100, 50, 20]
-    optimizers = ['Adam', 'SGD', 'SGD', 'SGD'] # , 'Adam', 'Adam'
-
-    # hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
-    epoch = 8000
-    #'3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod', '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
-    # label = '3layer_100'
-    # activation = nn.ReLU()
-    # optimizer = 'Adam'
-    
-    for i in range(0, len(labels)):
+    for i in range(3, len(labels)):
+    # for i in [1]:
         label = labels[i]
         activation = activations[i]
         hidden_layer = hidden_layers[i]
         optimizer = optimizers[i]
-        
+        epoch = epoches[i]
+        save_step = save_steps[i]
+
         train(cuda=True,
               epoch=epoch,
               save_dir=save_dir,
@@ -287,64 +255,45 @@ def run_train(nfeature, save_dir, head_dir):
               zt=False,
               n_feature=nfeature,
               head_dir=head_dir,
-              HIDDEN_NODES=hidden_layer,
+              hidden_nodes=hidden_layer,
               activation=activation,
               optimizer=optimizer,
-              n_output=2)
+              n_output=2,
+              save_module=True,
+              save_step=save_step)
         
         
 def run_t(nfeature, save_dir, head_dir):
-    # labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
-    # activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
-    # hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
-    
-    # labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
-    # activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.Sigmoid(), nn.Sigmoid(), nn.Sigmoid()]
-    # hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
-   
-    labels = ["3layer_100", "3layer_100_sgd", "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh"] #, "4layer_100", "4layer_500"
-    activations = [nn.ReLU(), nn.ReLU(), nn.Sigmoid(), nn.Tanh()] # , nn.Sigmoid(), nn.Sigmoid()
-    hidden_layers= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20]] # , [100, 100, 50, 20], [500, 100, 50, 20]
-    # optimizers = ['Adam', 'SGD', 'SGD', 'SGD'] # , 'Adam', 'Adam'
+    labels = ["3layer_100_relu", "3layer_100_sigmoid", "3layer_100_tanh",
+              "3layer_100_relu_sgd", "4layer_100", "4layer_500"]
+    activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(),
+                   nn.Sigmoid(), nn.Sigmoid(), nn.Sigmoid()]
+    hidden_layers = [[100, 50, 20], [100, 50, 20],
+                     [100, 50, 20], [100, 50, 20],
+                     [100, 100, 50, 20], [500, 100, 50, 20]]
+    nums = [15, 40, 10, 1600, 1180, 1740]
 
     for m in ['train_30_train.csv', 'train_30_test.csv', '10_for_check.csv']:
         for i in range(len(labels)):
             nlabel = labels[i]
             nactivation = activations[i]
             nhidden_layer = hidden_layers[i]
+            num = nums[i]
+            
+            cross_entropyloss_ntype_ttest(test_csv_fn=os.path.join(head_dir, m),
+                                          mp_fn=os.path.join(save_dir, 'dnn_params_%d_%s.pkl' % (num, nlabel)),
+                                          output_fn='result_%s_%s.out' % (m, nlabel), activation=nactivation,
+                                          save_dir=save_dir, n_feature=nfeature, hidden_nodes=nhidden_layer,
+                                          zt=False, n_output=2)
+        print('------')
 
-            CrossEntropyLoss_ntype_ttest(test_csv_fn=os.path.join(head_dir, m),
-                        mp_fn=os.path.join(save_dir, 'dnn_params_8000_%s.pkl' % nlabel),
-                        output_fn='result_%s_%s.out' % (m, nlabel), activation=nactivation,
-                        save_dir=save_dir, n_feature=nfeature, HIDDEN_NODES=nhidden_layer, zt=False, n_output=2)
-
-
-def run_test():
-    label = ['N_type_4layer_500', "3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
-    activation = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
-    hidden_layer= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
-
-    for m in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
-        
-        nlabel = label[0]
-        nactivation = activation[0]
-        nhidden_layer = hidden_layer[-1]
-
-        ntype_ttest(test_csv_fn=os.path.join(r'..\\data', m),
-              mp_fn=os.path.join(save_dir, 'dnn_params_5000_%s.pkl'%nlabel),
-              output_fn='result_%s_%s.out' % (m, nlabel), activation=nactivation,
-              save_dir=save_dir,  n_feature=nfeature, HIDDEN_NODES=nhidden_layer, zt=False, n_output=1)
-        break
-        
-        
 if __name__ == '__main__':
     # save_dir = 'ntype_training_module'
     # nfeature = 28
     # run_train()
     # run_test()
     hdir = r'G:\ztml\ztml\rdata\all_rmcoref_data'
-    save_dirs = '3ntype_training_module'
+    save_dirs = 'final_ntype_training_module'
     nfeatures = 11
     # run_train(nfeature=nfeatures, save_dir=save_dirs, head_dir=hdir)
     run_t(nfeature=nfeatures, save_dir=save_dirs, head_dir=hdir)
-

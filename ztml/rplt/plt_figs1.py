@@ -16,14 +16,15 @@ import seaborn as sns
 
 from ztml.tools import method2
 from ztml.data.clean_csv_data import read_data
-
+import os
 
 def get_correc_column_data():
-    tmp_file = r'..\data\temp_clean_data.csv'
+    head_dir = r"G:\ztml\ztml\rdata\all_rmcoref_data"
+    tmp_file = os.path.join(head_dir, 'temp_clean_data.csv')
     data = read_data(tmp_file)
 
-    column = data.columns.values.tolist()[:-2]
-    train_data = data.values[:, :-2]
+    column = data.columns.values.tolist()[1:-2]
+    train_data = data.values[:, 1:-2]
     a = np.corrcoef(train_data, rowvar=0)
     b = np.abs(np.triu(a))
     
@@ -45,26 +46,27 @@ def get_correc_column_data():
 
 
 def plt_cor(data, columns):
-    label_font = {"fontsize": 12, 'family': 'Times New Roman'}
-    legend_font = {"fontsize": 12, 'family': 'Times New Roman'}
-    tick_font_size = 12
-    index_label_font = {"fontsize": 20, 'weight': 'bold', 'family': 'Times New Roman'}
+    label_font = {"fontsize": 14, 'family': 'Times New Roman'}
+    # legend_font = {"fontsize": 12, 'family': 'Times New Roman'}
+    # tick_font_size = 12
+    index_label_font = {"fontsize": 18, 'weight': 'bold', 'family': 'Times New Roman'}
     plt.rc('font', family='Times New Roman', weight='normal')
-    nrow = 9
+    nrow = 7
     ncol = 9
-    index_label = "ABCDEFGH"
+    index_label = "abcde"
     
-    index_posi = [(-0.02, 3.1), (-0.09, 7.2), (-0.09, 6.1),
-                  (-0.05, 8.2), (-0.05, 9.2), (-0.05, 5.1),
-                  (-0.02, 4.1), (-0.02, 3.1)]
+    index_posi = [(-0.02, 2.1), (-0.09, 6.2), (-0.09, 6.2),
+                  (-0.05, 8.4), (-0.05, 5.2)]
     
-    plt.figure(figsize=(13, 13))
+    plt.figure(figsize=(9, 6))
     # axes = axes.flatten()
-    cbarax = plt.subplot2grid((nrow, ncol), (6, 6), colspan=1, rowspan=3)
+    cbarax = plt.subplot2grid((nrow, ncol), (4, 6), colspan=1, rowspan=3)
+    plt.rcParams["xtick.direction"] = 'in'
+    plt.rcParams["ytick.direction"] = 'in'
 
     for i in range(len(data)):
         # ax = axes[i]
-        ax = plt.subplot2grid((nrow, ncol), (int(i/3)*3, int(i%3)*3), colspan=3, rowspan=3)
+        ax = plt.subplot2grid((nrow, ncol), (int(i/3)*3 + 1 if int(i/3)*3 != 0 else int(i/3)*3, int(i%3)*3), colspan=3, rowspan=3)
         
         column = []
         for nn in columns[i]:
@@ -84,9 +86,9 @@ def plt_cor(data, columns):
             
         _ = sns.heatmap(data[i], vmin=-1, vmax=1, cmap='coolwarm', ax=ax, cbar=False)
         
-        if i == 7:
+        if i == 4:
             _ = sns.heatmap(data[i], vmin=-1, vmax=1, cmap='coolwarm', ax=ax, cbar_ax=cbarax,
-                            cbar_kws={"ticks": np.array([1, 0, -1])})
+                            cbar_kws={"ticks": np.arange(1, -1.2, -0.2)})
         
         ax.set_xticks(np.array(range(0, len(column))))
         ax.set_xlim(0, len(column))
@@ -106,16 +108,17 @@ def plt_cor(data, columns):
                            fontdict=label_font,
                            minor=True)  # va='center_baseline',
 
-        ax.grid(alpha=0.5, linewidth=0.5, color='white')
+        ax.grid(alpha=0.7, linewidth=0.5, color='white')
         
-        ax.tick_params(axis='x', direction='out', labelrotation=85, length=0.00001)
-        ax.tick_params(axis='y', direction='out', labelrotation=0, length=0.00001)
+        ax.tick_params(axis='x', direction='in', labelrotation=85, length=0.00001)
+        ax.tick_params(axis='y', direction='in', labelrotation=0, length=0.00001)
         pp = index_posi[i]
-        ax.text(pp[0], pp[1], index_label[i], fontdict=index_label_font)
+        ax.text(pp[0], pp[1], '(%s)' % index_label[i], fontdict=index_label_font)
 
-    plt.subplots_adjust(left=0.06, bottom=0.06, right=0.98, top=0.97, wspace=1, hspace=1)
+    plt.subplots_adjust(left=0.06, bottom=0.06, right=0.98, top=0.94, wspace=1, hspace=0)
     # plt.show()
-    plt.savefig('plt_coref_FigS1.tiff')
+    plt.savefig('plt_coref_FigS1.pdf', dpi=600)
+    plt.savefig('plt_coref_FigS1.jpg', dpi=600)
 
 
 if __name__ == '__main__':

@@ -81,7 +81,8 @@ def do_time():
 
 def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
           save_dir='', zt=True, label='1', head_dir=r"..\\rdata\\",
-          n_feature=34, hidden_nodes=None, activation=nn.ReLU(), optimizer='Adam'):
+          n_feature=34, hidden_nodes=None, activation=nn.ReLU(), optimizer='Adam',
+          save_module=True, save_step=100):
     rember_loss = 0
     _go = True
 
@@ -166,9 +167,6 @@ def train(restore=False, module_params_fn=None, lr=0.01, epoch=10000, cuda=True,
                                                      test_loss.cpu().data.numpy())
             print(txt_temple)
             # now_step = step + epoch * math.ceil(TOTAL_LINE / BATCH_SIZE)
-            save_module = True
-            save_step = 1000
-
             if epoch == 0:
                 write(tfn, txt_temple, 'w')
             else:
@@ -231,105 +229,35 @@ def write(fn, content, mode='w'):
     with open(fn, mode) as f:
         f.write(content + '\n')
 
-
-def run_train11(nfeature, head_dir, save_dir):
-    # hid    den_layer = [500, 100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
-    # epoch = 5000
-    # # '3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod',
-    #  '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
-    # label = '4layer_500'
-    # activation = nn.ReLU()
-    # optimizer = 'Adam'
-    # # label = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
-    # # activation = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
-    # # hidden_layer= [[100, 50, 20], [100, 50, 20], [100, 50, 20],
-    # [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
-    labels = ["3layer_100_adam", "3layer_100_sgd", "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh",
-              "4layer_100_sgd","4layer_500_sgd"]
-    # activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.Tanh(), nn.Tanh(), nn.Tanh()]
-    activations = [nn.ReLU(), nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU()]
-    hidden_layers = [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20],
-                     [100, 100, 50, 20], [500, 100, 50, 20]]
-    optimizers = ['Adam', 'SGD',  'SGD', 'SGD', 'SGD', 'SGD']
-    
-    # hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
-    
-    for i in range(0, len(labels)):
-        label = labels[i]
-        activation = activations[i]
-        hidden_layer = hidden_layers[i]
-        optimizer = optimizers[i]
-        if i > 0:
-            epoch = 12000
-        else:
-            epoch = 6000
-        
-        train(cuda=True,
-              epoch=epoch,
-              save_dir=save_dir,
-              label=label,
-              head_dir=head_dir,
-              n_feature=nfeature,
-              hidden_nodes=hidden_layer,
-              activation=activation,
-              optimizer=optimizer)
-
+sele = lambda x: x
 
 def run_train(nfeature, head_dir, save_dir):
-    # hid    den_layer = [500, 100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
-    # epoch = 5000
-    # # '3layer_100_Elu', '3layer_100_PRelu', '3layer_100_sigmod',
-    #  '3layer_100_Tanh', '3layer_100', '4layer_100', '4layer_500'
-    # label = '4layer_500'
-    # activation = nn.ReLU()
-    # optimizer = 'Adam'
-    # # label = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
-    # # activation = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
-    # # hidden_layer= [[100, 50, 20], [100, 50, 20], [100, 50, 20],
-    # [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
-    labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100_sgd", "4layer_500_sgd"]
-    # activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.Tanh(), nn.Tanh(), nn.Tanh()]
-    activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
-    hidden_layers = [[100, 50, 20], [100, 50, 20], [100, 50, 20],
-                     [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
+    labels = ["3layer_100_relu", "3layer_100_sigmoid",
+              "3layer_100_tanh", "3layer_100_relu_sgd",
+              "4layer_100", "4layer_500"]
+    activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(),
+                   nn.ReLU(), nn.ReLU(), nn.ReLU()]
+    hidden_layers = [[100, 50, 20], [100, 50, 20],
+                     [100, 50, 20], [100, 50, 20],
+                     [100, 100, 50, 20], [500, 100, 50, 20]]
     optimizers = ['Adam', 'Adam', 'Adam', 'SGD', 'SGD', 'SGD']
-
-    # hidden_layer = [100, 50, 20]  # [100, 50, 20]  [100, 100, 50, 20]
+    
+    labels = sele(labels)
+    activations = sele(activations)
+    hidden_layers = sele(hidden_layers)
+    optimizers = sele(optimizers)
 
     for i in range(0, len(labels)):
         label = labels[i]
         activation = activations[i]
         hidden_layer = hidden_layers[i]
         optimizer = optimizers[i]
-        if i > 2:
+        if i >= 3:
             epoch = 12000
+            save_step = 100
         else:
-            epoch = 6000
-            
-        train(cuda=True,
-              epoch=epoch,
-              save_dir=save_dir,
-              label=label,
-              head_dir=head_dir,
-              n_feature=nfeature,
-              hidden_nodes=hidden_layer,
-              activation=activation,
-              optimizer=optimizer)
-
-
-def run_new_train(nfeature, head_dir, save_dir):
-    labels = ["5layer_100", "6layer_100"]
-    activations = [nn.ReLU(), nn.ReLU()]
-    hidden_layers = [[100, 100, 100, 50, 20], [100, 100, 100, 100, 50, 20]]
-    optimizers = ['SGD', 'SGD']
-    
-    epoch = 8000
-    
-    for i in range(0, len(labels)):
-        label = labels[i]
-        activation = activations[i]
-        hidden_layer = hidden_layers[i]
-        optimizer = optimizers[i]
+            epoch = 3000
+            save_step = 50
         
         train(cuda=True,
               epoch=epoch,
@@ -339,38 +267,37 @@ def run_new_train(nfeature, head_dir, save_dir):
               n_feature=nfeature,
               hidden_nodes=hidden_layer,
               activation=activation,
-              optimizer=optimizer)
+              optimizer=optimizer,
+              save_module=True,
+              save_step=save_step)
 
 
 def run_test(nfeature, save_dir, head_dir=r"..\\rdata\\"):
-    
-    # label = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100", "4layer_500"]
-    # activation = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
-    # hidden_layer= [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
-    # labels = ["3layer_100", "3layer_100_sigmod", "3layer_100_Tanh", "3layer_100_sgd", "4layer_100_sgd", "4layer_500_sgd"]
-    # activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.Sigmoid(), nn.Sigmoid(), nn.Sigmoid()]
-    # activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU(), nn.ReLU()]
-    # hidden_layers = [[100, 50, 20], [100, 50, 20], [100, 50, 20],
-    #                  [100, 50, 20], [100, 100, 50, 20], [500, 100, 50, 20]]
-    
-    labels = ["3layer_100_adam", "3layer_100_sgd", "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh",
-              "4layer_100_sgd","4layer_500_sgd"]
-    # activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.Tanh(), nn.Tanh(), nn.Tanh()]
-    activations = [nn.ReLU(), nn.ReLU(), nn.Sigmoid(), nn.Tanh(), nn.ReLU(), nn.ReLU()]
-    hidden_layers = [[100, 50, 20], [100, 50, 20], [100, 50, 20], [100, 50, 20],
+    # labels = ["3layer_100_adam", "3layer_100_sgd",
+    #           "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh",
+    #           "4layer_100_sgd", "4layer_500_sgd",
+    #           "5layer_100", "6layer_100"]
+    # activations = [nn.ReLU(), nn.ReLU(),
+    #                nn.Sigmoid(), nn.Tanh(),
+    #                nn.ReLU(), nn.ReLU(),
+    #                nn.ReLU(), nn.ReLU()]
+    labels = ["3layer_100_relu", "3layer_100_sigmoid",
+              "3layer_100_tanh", "3layer_100_relu_sgd",
+              "4layer_100", "4layer_500"]
+    activations = [nn.ReLU(), nn.Sigmoid(), nn.Tanh(),
+                   nn.ReLU(), nn.ReLU(), nn.ReLU()]
+    hidden_layers = [[100, 50, 20], [100, 50, 20],
+                     [100, 50, 20], [100, 50, 20],
                      [100, 100, 50, 20], [500, 100, 50, 20]]
-
+    
+    nums = [200, 50, 50, 12000, 12000, 11600]
     
     for m in ['train_30_train.csv', 'train_30_test.csv']:
         for i in range(len(labels)):
             nlabel = labels[i]
             nactivation = activations[i]
             nhidden_layer = hidden_layers[i]
-            
-            if i > 0:
-                num = 12000
-            else:
-                num = 6000
+            num = nums[i]
                 
             ttest(test_csv_fn=os.path.join(head_dir, m),
                   mp_fn=os.path.join(save_dir, 'dnn_params_%d_%s.pkl' % (num, nlabel)),
@@ -381,8 +308,7 @@ def run_test(nfeature, save_dir, head_dir=r"..\\rdata\\"):
             
 if __name__ == '__main__':
     hdir = r'G:\ztml\ztml\rdata\all_rmcoref_data'
-    save_dirs = '5training_module'
+    save_dirs = 'final_training_module'
     nssfeature = 11
-    # run_train11(nssfeature, hdir, save_dirs)
-    # run_new_train(nssfeature, hdir, save_dirs)
+    # run_train(nssfeature, hdir, save_dirs)
     run_test(nssfeature, save_dirs, hdir)

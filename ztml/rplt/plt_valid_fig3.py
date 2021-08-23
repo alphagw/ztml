@@ -32,9 +32,10 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
     __tmp_ori = pd.read_csv(os.path.join(r'../data', '0-20201203_descriptors.csv'))
     _tcl = __tmp_ori.columns.values
     __tmp_ori1 = __tmp_ori[_tcl[0]].values
-    __tmp_ori2 = __tmp_ori[_tcl[37]].values
+    __tmp_ori2 = __tmp_ori[_tcl[25]].values
     __tmp_ori2 = [round(i, 5) for i in (__tmp_ori2 - np.min(__tmp_ori2)) /(np.max(__tmp_ori2) - np.min(__tmp_ori2))]
     origin_data = dict(zip(__tmp_ori2, __tmp_ori1))
+    # print(origin_data)
 
     label_font = {"fontsize": 16, 'family': 'Times New Roman'}
     tick_font_size = 14
@@ -62,7 +63,7 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
         #            alpha=(pd1[m, 2] - 100) / 550, s=90)
     # ax.scatter(pd1[:, 0], pd1[:, 1], c=t, norm=mpl.colors.BoundaryNorm(t, cmp.N), cmap=cmp)
     slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(pd1[:, 0], pd1[:, 1])
-    print(r_value ** 2)
+    # print(r_value ** 2)
     slice_set = 0.0, 1.
     _tmp_xy = np.linspace(slice_set, pd1.shape[0])
     ax.plot(_tmp_xy, _tmp_xy, '#F37878', linewidth=3, alpha=0.8)
@@ -72,6 +73,11 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
     ax.set_ylabel("Predicted", fontdict=label_font)
     ax.text(0.01, 1.01, "A", fontdict=index_label_font)
     ax.text(0.15, 0.8, "R-squared(R2): %.5f" % r_value**2, fontdict=label_font)
+    mse = np.mean(np.square(pd1[:, 0] - pd1[:, 1]))
+    rmse = np.sqrt(np.mean(np.square(pd1[:, 0] - pd1[:, 1])))
+    print(rmse, mse)
+    ax.text(0.15, 0.75, "MSE: %.5f" % mse, fontdict=label_font)
+    ax.text(0.15, 0.7, "RMSE: %.5f" % rmse, fontdict=label_font)
     labels = [str(i)+'K' for i in c12.keys()]
     handles = [plt.Circle((0, 0), 1, color=c12[int(label[:-1])]) for label in labels]
     ax.legend(handles, labels, ncol=3, loc='lower right')
@@ -109,15 +115,14 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
         new_data = pd.DataFrame(__dd, columns=['CZT', 'PZT', 'T', 'N3', "V1", "CN", "PN"], index=None)
         split_data = new_data.groupby(['N3'])
         dd = []
-        txt_label = ['A${_1}$B${_2}$C${_4}$', 'A${_2}$B${_2}$C${_5}$', 'A${_1}$B${_4}$C${_7}$', 'A${_3}$B${_2}$C${_6}$']
+        txt_label = ['A${_1}$B${_2}$C${_4}$', 'A${_2}$B${_2}$C${_5}$', 'A${_3}$B${_2}$C${_6}$', 'A${_1}$B${_4}$C${_7}$']
         for i, j in split_data.groups.items():
             dd.append(new_data.loc[j])
         # print(split_data)
         # dd = pd.concat(dd)
         # dd = pd.DataFrame(dd.values, index=None, columns=dd.columns.values)
-        
         def get_color(data):
-            return ['#F37878' if data[i] < 0.5 else '#347FE2' for i in range(data.shape[0])]
+            return ['#F37878' if data[i] > 0.5 else '#347FE2' for i in range(data.shape[0])]
         
         for i in range(len(txt_label)):
             ax2 = plt.subplot2grid((12, 2), (3*i, 1), colspan=1, rowspan=3)
@@ -182,13 +187,13 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
 
 
 if __name__ == '__main__':
-    save_dir = r'..\rtrain\5training_module'
-    save_dir2 = r'..\train\2ntype_training_module'
+    save_dir = r'..\rtrain\final_training_module'
+    save_dir2 = r'..\rtrain\final_ntype_training_module'
     fn1 = r'10_for_check.csv'
     fn2 = r'30_for_predict.csv'
     data_file1 = os.path.join(save_dir, 'z_result_valid_has_t_%s.out' % fn1)
     data_file2 = os.path.join(save_dir, 'z_result_valid_has_t_%s.out' % fn2)
-    ntype_f1 = os.path.join(save_dir, 'ntype_z_result_valid_has_t_%s.out' % fn1)
-    ntype_f2 = os.path.join(save_dir, 'ntype_z_result_valid_has_t_%s.out' % fn2)
-    # plt_predict_cal(data_file1, data_file2, ntype_f1, ntype_f2)
-    plt_predict_cal(data_file1, data_file2)
+    ntype_f1 = os.path.join(save_dir2, 'ntype_z_result_valid_has_t_%s.out' % fn1)
+    ntype_f2 = os.path.join(save_dir2, 'ntype_z_result_valid_has_t_%s.out' % fn2)
+    plt_predict_cal(data_file1, data_file2, ntype_f1, ntype_f2)
+    # plt_predict_cal(data_file1, data_file2)
