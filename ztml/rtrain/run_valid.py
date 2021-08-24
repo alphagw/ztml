@@ -53,7 +53,8 @@ if __name__ == '__main__':
     fn1 = r'10_for_check.csv'
     
     # has_t 指定想要获取那一列特征并且输出到结果中，-5列是温度(必须去掉label列)，第3列是C原子总数, 第12列wei B_Gpa, 可以区分开化合物的一列
-    has_t = [-1, 2, 6]
+    # has_t 指定想要获取那一列特征并且输出到结果中，-1列是温度(必须去掉2个label列)，第3列是C原子总数, 第8列c轴长度, 可以区分开化合物的一列
+    has_t = [-1, 2, 7]
     use_ml_to_predict_zt(head_dir, fn1, has_t=has_t)
     use_ml_to_predict_zt(head_dir, fn2, has_t=has_t)
     # use_ml_to_predict_ntype(head_dir, fn1, has_t=has_t)

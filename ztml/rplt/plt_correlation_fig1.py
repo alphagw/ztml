@@ -141,11 +141,12 @@ def plt_fig1():
     ax3.text(0.1, 11.3, '(b)', fontdict=index_label_font)
 
     # plt.savefig('plt_coref_fig1.pdf')
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.subplots_adjust(left=0.06, bottom=0.12, top=0.93, right=0.98, wspace=1.2)
     # plt.show()
     plt.savefig('plt_coref_fig1.pdf', dpi=600)
     plt.savefig('plt_coref_fig1.jpg', dpi=600)
+    plt.savefig('plt_coref_fig1.tiff', dpi=600)
 
 
 if __name__ == '__main__':

@@ -151,6 +151,9 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         
     if show:
         plt.show()
+    plt.savefig('plt_fig2.pdf', dpi=600)
+    plt.savefig('plt_fig2.tiff', dpi=600)
+    
 
 if __name__ == '__main__':
     # fn, ofn = r"training_module/out_run3.train", 'train.pdf'
@@ -185,7 +188,7 @@ if __name__ == '__main__':
             predict_data.append(read_cal_predit(output_fn))
             print(training_fn, output_fn)
         save_fn = 'plt_%s_fig2train.pdf' % i
-        plt_result(predict_data, training_data, text, save_fn='plt_fig2.jpg', show=True)
+        plt_result(predict_data, training_data, text, save_fn='plt_fig2.jpg', show=False)
         # plt_result(predict_data, training_data, text, save_fn=save_fn, show=False)
 
         exit()

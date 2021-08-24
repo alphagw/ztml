@@ -80,7 +80,7 @@ def run_compounds_split(fn, head_dir, is_nop_to_01=True):
     # valid_index = [1, 2, 3, 5, 11, 14, 20, 22, 27, 29, 30, 32, 35, 37, 38, 41, 43, 44, 45, 49,
     #                50, 51, 52, 54, 56, 58, 59, 64, 65, 67]
     check_index = [12, 18, 21, 26, 34, 36, 39, 53, 60, 69]
-    train_index = [4, 6, 7, 8, 9, 10, 13, 15, 16, 17, 19, 23, 24, 25, 28, 31, 33, 40, 42, 46, 47, 48,
+    train_index = [4, 6, 7, 8, 9, 10, 13, 15, 16, 17, 19, 23, 24, 25, 27, 28, 33, 40, 42, 46, 47, 48,
                    55, 57, 61, 62, 63, 66, 68, 70]
     use2train_data, use2valid_data = get_random_groupby_index(normalized_data, column_index=['Index'],
                                                               ratio=3/7, to_data=True, train_index=train_index)

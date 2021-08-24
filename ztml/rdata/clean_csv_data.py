@@ -29,7 +29,7 @@ def add_tempeture(data):
     fn_data = None
     for tm in tempeture:
         tmp_data = deepcopy(copydata)
-        tmp_data.insert(tmp_data.shape[1], 'Temperature', tm)
+        tmp_data.insert(tmp_data.shape[1], 'T', tm)
     
         for ti in range(len(t_index)):
             tmp_data.insert(tmp_data.shape[1], new_ii[ti], data[t_index[ti] % tm])

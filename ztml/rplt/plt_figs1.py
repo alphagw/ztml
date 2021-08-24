@@ -89,7 +89,9 @@ def plt_cor(data, columns):
         if i == 4:
             _ = sns.heatmap(data[i], vmin=-1, vmax=1, cmap='coolwarm', ax=ax, cbar_ax=cbarax,
                             cbar_kws={"ticks": np.arange(1, -1.2, -0.2)})
-        
+            cbarax.tick_params(axis='x', direction='in')
+            cbarax.tick_params(axis='y', direction='in')
+
         ax.set_xticks(np.array(range(0, len(column))))
         ax.set_xlim(0, len(column))
         ax.set_xticks(np.array(range(0, len(column))) + 0.5, minor=True)
@@ -112,6 +114,7 @@ def plt_cor(data, columns):
         
         ax.tick_params(axis='x', direction='in', labelrotation=85, length=0.00001)
         ax.tick_params(axis='y', direction='in', labelrotation=0, length=0.00001)
+
         pp = index_posi[i]
         ax.text(pp[0], pp[1], '(%s)' % index_label[i], fontdict=index_label_font)
 
@@ -119,6 +122,7 @@ def plt_cor(data, columns):
     # plt.show()
     plt.savefig('plt_coref_FigS1.pdf', dpi=600)
     plt.savefig('plt_coref_FigS1.jpg', dpi=600)
+    plt.savefig('plt_coref_FigS1.tiff', dpi=600)
 
 
 if __name__ == '__main__':

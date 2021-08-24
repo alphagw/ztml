@@ -29,21 +29,20 @@ aa = lambda x: 0.05 if x < 0.5 else 0.95
 
 def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
     # 处理 BGPa对应的 元素名称
-    __tmp_ori = pd.read_csv(os.path.join(r'../data', '0-20201203_descriptors.csv'))
+    __tmp_ori = pd.read_csv(os.path.join(r'../rdata', 'duiyingguanxi.csv'))
     _tcl = __tmp_ori.columns.values
-    __tmp_ori1 = __tmp_ori[_tcl[0]].values
-    __tmp_ori2 = __tmp_ori[_tcl[25]].values
+    __tmp_ori1 = __tmp_ori[_tcl[1]].values
+    __tmp_ori2 = __tmp_ori[_tcl[2]].values
     __tmp_ori2 = [round(i, 5) for i in (__tmp_ori2 - np.min(__tmp_ori2)) /(np.max(__tmp_ori2) - np.min(__tmp_ori2))]
     origin_data = dict(zip(__tmp_ori2, __tmp_ori1))
-    # print(origin_data)
 
     label_font = {"fontsize": 14, 'family': 'Times New Roman'}
     tick_font_size = 14
-    index_label_font = {"fontsize": 20, 'weight': 'bold', 'family': 'Times New Roman'}
+    index_label_font = {"fontsize": 20, 'weight': 'light', 'family': 'Times New Roman'}
     tick_font_dict = {"fontsize": tick_font_size, 'family': 'Times New Roman'}
     # lv #3CAF6F
     plt.figure(figsize=(12, 6))
-    plt.rc('font', family='Times New Roman', weight='normal')
+    plt.rc('font', family='Times New Roman', weight='light')
     plt.rcParams["xtick.direction"] = 'in'
     plt.rcParams["ytick.direction"] = 'in'
     ax = plt.subplot2grid((27, 2), (0, 0), colspan=1, rowspan=17)
@@ -121,19 +120,30 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
         new_data = pd.DataFrame(__dd, columns=['CZT', 'PZT', 'T', 'N3', "V1", "CN", "PN"], index=None)
         split_data = new_data.groupby(['N3'])
         dd = []
-        txt_label = ['A${_1}$B${_2}$C${_4}$', 'A${_2}$B${_2}$C${_5}$', 'A${_3}$B${_2}$C${_6}$', 'A${_1}$B${_4}$C${_7}$']
-        for i, j in split_data.groups.items():
-            dd.append(new_data.loc[j])
+        from collections import OrderedDict
+        txt_label = OrderedDict({'0.000': 'A${_1}$B${_2}$C${_4}$',
+                                 '1.000': 'A${_1}$B${_4}$C${_7}$',
+                                 '0.333': 'A${_2}$B${_2}$C${_5}$',
+                                 '0.667': 'A${_3}$B${_2}$C${_6}$'})
+        dd = {'%.3f' % i: new_data.loc[j] for i, j in split_data.groups.items()}
+        # for i, j in split_data.groups.items():
+        #     dd.append(new_data.loc[j])
         # print(split_data)
         # dd = pd.concat(dd)
         # dd = pd.DataFrame(dd.values, index=None, columns=dd.columns.values)
         def get_color(data):
             return ['#F37878' if data[i] > 0.5 else '#347FE2' for i in range(data.shape[0])]
         start_x = [0, 7, 14, 21]
-        for i in range(len(txt_label)):
+        conpounds_index = {'0.000': ["SnBiSe", 'SnSbTe', 'GeBiSe', 'GeSbSe', 'GeAsTe', 'GeAsSe'],
+                           '1.000': ["GeBiSe", 'PbBiTe', 'PbSbTe', 'SnBiTe', 'SnBiSe', 'SnAsTe', 'SnSbSe', 'GeAsSe'],
+                           '0.333': ["PbAsTe", 'PbBiTe', 'PbAsSe', 'SnSbTe', 'SnAsSe', 'SiSbTe', 'SiBiTe', 'SnSbSe', 'GeSbSe', 'PbSbSe', 'GeAsSe'],
+                           '0.667': ["SnBiTe", 'GeAsSe', 'GeBiTe', 'PbAsTe', 'SnSbSe']
+                           }
+        
+        for i, (index, _tmp_label) in enumerate(txt_label.items()):
             ax2 = plt.subplot2grid((27, 2), (start_x[i], 1), colspan=1, rowspan=6)
-            _tsd = deepcopy(dd[i])
-            data = dd[i].groupby(["V1"])
+            _tsd = deepcopy(dd[index])
+            data = dd[index].groupby(["V1"])
             __new_ddd = []
             for j, k in data.groups.items():
                 _tmp_dd = _tsd.loc[k]
@@ -149,26 +159,44 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
             t = fdd[:]['T'].values
             alphat = t / 2 + 0.5
             _t_label_index, _t_label = [], []
+            _tmp_data = OrderedDict({})
+            
             for xx in range(fdd.shape[0]):
                 symbol = origin_data[round(bgp[xx], 5)]
                 # if symbol == 'SnSbSe':
                 #     print(round(bgp[xx], 5))
                 #     exit()
-                if round(t[xx], 5) == round(0.4545454545454545, 5):
+                # if round(t[xx], 5) == round(0.4545454545454545, 5):
+                #     _t_label_index.append(xx)
+                #     _t_label.append(symbol)
+                if symbol not in _tmp_data:
+                    _tmp_data[symbol] = [(zt_val[xx], _colors[xx], alphat[xx], round(t[xx], 5), symbol)]
+                else:
+                    _tmp_data[symbol].append((zt_val[xx], _colors[xx], alphat[xx], round(t[xx], 5), symbol))
+            
+            # print(_tmp_data)
+            iiddd = []
+            print(index)
+            print(_tmp_data.keys())
+            for k in conpounds_index[index]:
+                iiddd.extend(_tmp_data[k])
+                
+            for xx, (hh1, hh2, hh3, t_index, symbol) in enumerate(iiddd):
+                ax2.bar(xx, hh1, width=width, color=hh2, alpha=hh3)
+                # ax2.bar(xx, zt_val[xx], width=width, color=_colors[xx], alpha=1)
+                if t_index == round(0.4545454545454545, 5):
                     _t_label_index.append(xx)
                     _t_label.append(symbol)
-                ax2.bar(xx, zt_val[xx], width=width, color=_colors[xx], alpha=alphat[xx])
-                # ax2.bar(xx, zt_val[xx], width=width, color=_colors[xx], alpha=1)
-    
+                    
             ax2.set_xlim(-1, len(fdd))
             ax2.set_xticks(_t_label_index)
             ax2.set_xticklabels(_t_label)
             ax2.set_ylim(0, 1.1)
     
-            if i == 1:
+            if i == 2:
                 ax2.tick_params(axis='x', labelsize=tick_font_size-2, rotation=15)
                 ax2.tick_params(axis='y', labelsize=tick_font_size)
-            elif i == 3:
+            elif i == 1:
                 ax2.tick_params(axis='x', labelsize=tick_font_size-1, rotation=10)
                 ax2.tick_params(axis='y', labelsize=tick_font_size)
             else:
@@ -182,15 +210,16 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
                 ax2.legend(handles, labels, ncol=2, loc='upper right')
             
             if i == 2:
-                ax2.text(0, 0.85, txt_label[i], fontdict=label_font)
+                ax2.text(0, 0.85, txt_label[index], fontdict=label_font)
                 ax2.set_ylabel("                                          ZT$_{max}$", fontdict=label_font)
             else:
-                ax2.text(1, 0.85, txt_label[i], fontdict=label_font)
-    
+                ax2.text(1, 0.85, txt_label[index], fontdict=label_font)
             
     # plt.tight_layout()
     plt.subplots_adjust(left=0.06, bottom=0.08, right=0.98, top=0.95, hspace=1, wspace=0.1)
+    plt.savefig('plt_valid_fig3.jpg', dpi=600)
     plt.savefig('plt_valid_fig3.pdf', dpi=600)
+    plt.savefig('plt_valid_fig3.tiff', dpi=600)
     # plt.show()
 
 

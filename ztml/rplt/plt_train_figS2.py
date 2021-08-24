@@ -165,10 +165,14 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False,
         
     plt.subplots_adjust(left=0.08, bottom=0.06, right=0.98, top=0.96, wspace=0.21, hspace=0.26)
     if save_fn is not None:
-        plt.savefig(save_fn)
+        plt.savefig(save_fn, dpi=600)
         
     if show:
         plt.show()
+
+    plt.savefig('plt_figS2.tiff', dpi=600)
+    plt.savefig('plt_figS2.jpg', dpi=600)
+
 
 if __name__ == '__main__':
     # fn, ofn = r"training_module/out_run3.train", 'train.pdf'
@@ -198,7 +202,7 @@ if __name__ == '__main__':
             predict_data.append(read_cal_predit(output_fn))
         
         save_fn = 'plt_%s_figS2.pdf' % i
-        plt_result(predict_data, training_data, text, save_fn='plt_figS2.jpg', show=False, point_num=nums)
+        plt_result(predict_data, training_data, text, save_fn='plt_figS2.pdf', show=False, point_num=nums)
         # plt_result(predict_data, training_data, text, save_fn=save_fn, show=False)
 
         exit()
