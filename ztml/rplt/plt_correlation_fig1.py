@@ -55,8 +55,8 @@ def plt_fig1():
             _label = r'$\kappa_{%s}$' % nn[1:]
         elif str(nn).startswith('r') or str(nn).startswith('R') or str(nn).startswith('n') or str(nn).startswith('m'):
             _label = r'%s$_{%s}$' % (str(nn[0]).lower(), nn[1:])
-        elif str(nn) == 'a/b':
-            _label = nn
+        elif str(nn) == 'a_b':
+            _label = 'a/b'
         elif str(nn) == 'NC.1':
             nn = "NCo"
             _label = r'%s$_{%s}$' % (str(nn[0]).upper(), nn[1:])

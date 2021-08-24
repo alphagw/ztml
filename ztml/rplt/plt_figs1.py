@@ -72,11 +72,11 @@ def plt_cor(data, columns):
         for nn in columns[i]:
             if str(nn).startswith('K') or str(nn).startswith('k'):
                 _label = r'$\kappa_{%s}$' % nn[1:]
-            elif str(nn).startswith('r') or str(nn).startswith('R') or str(nn).startswith('n') or str(nn).startswith(
-                    'm'):
+            elif str(nn).startswith('r') or str(nn).startswith('R') or \
+                    str(nn).startswith('n') or str(nn).startswith('m'):
                 _label = r'%s$_{%s}$' % (str(nn[0]).lower(), nn[1:])
-            elif str(nn) == 'a/b':
-                _label = nn
+            elif str(nn) == 'a_b':
+                _label = 'a/b'
             elif str(nn) == 'NC.1':
                 nn = "NCo"
                 _label = r'%s$_{%s}$' % (str(nn[0]).upper(), nn[1:])
@@ -118,7 +118,7 @@ def plt_cor(data, columns):
         pp = index_posi[i]
         ax.text(pp[0], pp[1], '(%s)' % index_label[i], fontdict=index_label_font)
 
-    plt.subplots_adjust(left=0.06, bottom=0.06, right=0.98, top=0.94, wspace=1, hspace=0)
+    plt.subplots_adjust(left=0.06, bottom=0.12, right=0.98, top=0.94, wspace=1, hspace=0)
     # plt.show()
     plt.savefig('plt_coref_FigS1.pdf', dpi=600)
     plt.savefig('plt_coref_FigS1.jpg', dpi=600)
