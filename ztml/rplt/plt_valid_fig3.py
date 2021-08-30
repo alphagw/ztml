@@ -87,7 +87,7 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
     # ax.text(0.15, 0.8, "R-squared(R2): %.5f\n" % r_value**2, fontdict=label_font)
     mse = np.mean(np.square(pd1[:, 0] - pd1[:, 1]))
     rmse = np.sqrt(np.mean(np.square(pd1[:, 0] - pd1[:, 1])))
-    ax.text(0.12, 0.7, "R-squared(R2): %.5f\nMSE: %.5f\nRMSE: %.5f\n" % (r_value**2, mse, rmse), fontdict=label_font)
+    ax.text(0.12, 0.7, "R-squared(R2): %.5f\nMSE: %.5f\nRMSE: %.5f\nAccuracy: %.3f" % (r_value**2, mse, rmse, (1-rmse)*100) + '%', fontdict=label_font)
     # ax.text(0.15, 0.7, "RMSE: %.5f\n" % rmse, fontdict=label_font)
     labels = [str(i)+'K' for i in c12.keys()]
     handles = [plt.Circle((0, 0), 1, color=c12[int(label[:-1])]) for label in labels]
@@ -98,14 +98,14 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
     
     if (ntype1 is not None) and (ntype2 is not None) and (fn2 is not None):
         npd1 = read_cal_predit(ntype1)
-        da111111 = pd.DataFrame(npd1, columns=['CN', 'PN', 'T', 'N3', "V1"], index=None)
-        da111111 = da111111.groupby(['N3'])
-        for i, j in da111111:
-            print(i)
-            data222 = j.groupby(['V1'])
-            for nn, jj in data222:
-                print(nn, origin_data[round(nn, 5)], ' '.join([str(ii) for ii in jj['PN']]))
-        exit()
+        # da111111 = pd.DataFrame(npd1, columns=['CN', 'PN', 'T', 'N3', "V1"], index=None)
+        # da111111 = da111111.groupby(['N3'])
+        # for i, j in da111111:
+        #     print(i)
+        #     data222 = j.groupby(['V1'])
+        #     for nn, jj in data222:
+        #         print(nn, origin_data[round(nn, 5)], ' '.join([str(ii) for ii in jj['PN']]))
+        # exit()
         
         ax0 = plt.subplot2grid((27, 2), (20, 0), colspan=1, rowspan=7)
         for i in range(npd1.shape[0]):
@@ -244,12 +244,11 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
                 ax2.set_ylabel("                                          ZT$_{max}$", fontdict=label_font)
             else:
                 ax2.text(1, 0.85, txt_label[index], fontdict=label_font)
-    exit()
     # plt.tight_layout()
     plt.subplots_adjust(left=0.06, bottom=0.08, right=0.98, top=0.95, hspace=1, wspace=0.1)
     plt.savefig('plt_valid_fig3.jpg', dpi=600)
     plt.savefig('plt_valid_fig3.pdf', dpi=600)
-    plt.savefig('plt_valid_fig3.tiff', dpi=600)
+    # plt.savefig('plt_valid_fig3.tiff', dpi=600)
     # plt.show()
 
 
@@ -257,8 +256,8 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
 if __name__ == '__main__':
     save_dir = r'..\rtrain\final_training_module'
     save_dir2 = r'..\rtrain\final_ntype_training_module'
-    # fn1 = r'10_for_check.csv'
-    fn1 = r'train_30_test.csv'
+    fn1 = r'10_for_check.csv'
+    # fn1 = r'train_30_test.csv'
     # fn1 = r'train_30_train.csv'
     fn2 = r'30_for_predict.csv'
     data_file1 = os.path.join(save_dir, 'z_result_valid_has_t_%s.out' % fn1)
