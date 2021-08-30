@@ -14,6 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+aa = lambda x: 0.05 if x < 0.5 else 0.95
 
 def read_mse_data(fn):
     with open(fn, 'r') as f:
@@ -39,8 +40,8 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False,
            [0.800 + 0.004-0.02, 0.730+0.08, _xwd, _ywd],
            [0.305 + 0.010-0.02, 0.410+0.08, _xwd, _ywd],
            [0.800 + 0.019-0.02, 0.410+0.08, _xwd, _ywd],
-           [0.305 + 0.000-0.02, 0.078+0.08, _xwd, _ywd],
-           [0.800 + 0.000-0.02, 0.078+0.08, _xwd, _ywd]]
+           [0.305 + 0.000-0.00, 0.078+0.08, _xwd, _ywd],
+           [0.800 + 0.000-0.00, 0.078+0.08, _xwd, _ywd]]
 
     nrow = 3
     ncol = 2
@@ -60,12 +61,18 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False,
         pd1 = predict_data[i]
         ax.scatter(range(1, len(pd1)+1), pd1[:, 0], edgecolors='#53c482', color=colors['Calculated'], alpha=1, linewidths=0.01, s=90)
         ax.scatter(range(1, len(pd1)+1), pd1[:, 1], edgecolors='#ffa227', color=colors['Predicted'], alpha=1, linewidths=0.01, s=90)
+        wrong_num = 0
+        for nnn in range(pd1.shape[0]):
+            if aa(pd1[nnn][0]) != aa(pd1[nnn][1]):
+                wrong_num += 1
         
+        # ax.text(10, 0.45, 'Accuracy: %.3f' % ((1 - wrong_num / pd1.shape[0]) * 100) + '%', fontdict=tick_font_dict)
+
         slice_set = -0.1, 1.15
         _tmp_xy = np.linspace(slice_set, pd1.shape[0])
         ax.set_xlim(-5, len(pd1)+5)
         ax.set_ylim(slice_set)
-        ax.text(3, 0.55, text[i], fontdict=legend_font)
+        ax.text(3, 0.55, text[i] % ((1 - wrong_num / pd1.shape[0]) * 100) + '%', fontdict=legend_font)
 
         ax.text(0.01, 1.2, pindex[i], fontdict=index_label_font)
         ax.set_xticks([0, 100, 200, 252])
@@ -170,7 +177,7 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False,
     if show:
         plt.show()
 
-    plt.savefig('plt_figS2.tiff', dpi=600)
+    plt.savefig('plt_figS2.pdf', dpi=600)
     plt.savefig('plt_figS2.jpg', dpi=600)
 
 
@@ -180,12 +187,12 @@ if __name__ == '__main__':
     label = 'run1'
     save_dir = r'..\rtrain\final_ntype_training_module'
     # run_mse(os.path.join(save_dir, 'running_%s.log' % label), 'training_%s.pdf' % label)
-    text = ["Activation : Relu\nOptimizer : Adam\nHidden Layers :\n[100, 50, 20]",
-            "Activation : Sigmod\nOptimizer : Adam\nHidden Layers :\n[100, 50, 20]",
-            "Activation : Tanh\nOptimizer : Adam\nHidden Layers :\n[100, 50, 20]",
-            "Activation : Tanh\nOptimizer : SGD\nHidden Layers :\n[100, 50, 20]",
-            "Activation : Tanh\nOptimizer : Adam\nHidden Layers :\n[100, 100, 50, 20]",
-            "Activation : Tanh\nOptimizer : Adam\nHidden Layers :\n[500, 100, 50, 20]"]
+    text = ["Activation : Relu\nOptimizer : Adam\nHidden Layers :\n[100, 50, 20]\nAccuracy: %.3f",
+            "Activation : Sigmod\nOptimizer : Adam\nHidden Layers :\n[100, 50, 20]\nAccuracy: %.3f",
+            "Activation : Tanh\nOptimizer : Adam\nHidden Layers :\n[100, 50, 20]\nAccuracy: %.3f",
+            "Activation : Tanh\nOptimizer : SGD\nHidden Layers :\n[100, 50, 20]\nAccuracy: %.3f",
+            "Activation : Tanh\nOptimizer : Adam\nHidden Layers :\n[100, 100, 50, 20]\nAccuracy: %.3f",
+            "Activation : Tanh\nOptimizer : Adam\nHidden Layers :\n[500, 100, 50, 20]\nAccuracy: %.3f"]
     labels = ["3layer_100_relu", "3layer_100_sigmoid", "3layer_100_tanh",
               "3layer_100_relu_sgd", "4layer_100", "4layer_500"]
     # nums = [8, 21, 8, 658, 558, 599]
@@ -202,7 +209,7 @@ if __name__ == '__main__':
             predict_data.append(read_cal_predit(output_fn))
         
         save_fn = 'plt_%s_figS2.pdf' % i
-        plt_result(predict_data, training_data, text, save_fn='plt_figS2.pdf', show=False, point_num=nums)
+        plt_result(predict_data, training_data, text, save_fn=None, show=False, point_num=nums)
         # plt_result(predict_data, training_data, text, save_fn=save_fn, show=False)
 
         exit()

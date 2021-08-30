@@ -67,13 +67,13 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(pd1[:, 0], pd1[:, 1])
         rmse = np.sqrt(np.mean(np.square(pd1[:, 0] - pd1[:, 1])))
 
-        if 1 <= i <= 2:
+        if i <= 1:
             slice_set = -0.3, 1.25
-            ax.text(-0.25, 0.72, text[i] % (r_value**2, rmse), fontdict=legend_font)
+            ax.text(-0.25, 0.67, text[i] % (r_value**2, rmse, (1-rmse)*100) + "%", fontdict=legend_font)
             ax.text(-0.25, 1.3, pindex[i], fontdict=index_label_font)
         else:
             slice_set = -0.1, 1.25
-            ax.text(-0.05, 0.8, text[i] % (r_value**2, rmse), fontdict=legend_font)
+            ax.text(-0.05, 0.75, text[i] % (r_value**2, rmse, (1-rmse)*100) + "%", fontdict=legend_font)
             ax.text(-0.05, 1.3, pindex[i], fontdict=index_label_font)
 
         _tmp_xy = np.linspace(slice_set, pd1.shape[0])
@@ -101,21 +101,21 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
         ax2 = fig.add_axes([left, bottom, width, height])
         ax2.plot(tx, ytrain, c='#347FE2', linewidth=1.2, label='train')
         ax2.plot(tx, ytest, c='#F37878', linewidth=1.2, label='test')
-        if i == 0:
+        if i == 2:
             train_final_mean = np.mean(ytrain[200:2500])
             test_final_mean = np.mean(ytest[200:2500])
             ax2.set_xlim(-80, 3000)
             ax2.set_ylim(-0.001, 0.05)
             ax2.text(800, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean), fontdict=legend_font)
             ax2.set_yticks([0.0, 0.1])
-        elif i == 1:
+        elif i == 0:
             train_final_mean = np.mean(ytrain[500:2500])
             test_final_mean = np.mean(ytest[500:2500])
             ax2.set_xlim(-80, 3000)
             ax2.set_ylim(-0.001, 0.1)
             ax2.text(800, 0.05, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean), fontdict=legend_font)
             ax2.set_yticks([0.0, 0.1])
-        elif i == 2:
+        elif i == 1:
             train_final_mean = np.mean(ytrain[500:2500])
             test_final_mean = np.mean(ytest[500:2500])
             ax2.set_xlim(-80, 3000)
@@ -123,8 +123,8 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
             ax2.text(800, 0.09, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean), fontdict=legend_font)
             ax2.set_yticks([0.0, 0.2])
         elif i >= 3:
-            train_final_mean = np.mean(ytrain[8000:12000])
-            test_final_mean = np.mean(ytest[8000:12000])
+            train_final_mean = np.mean(ytrain[10000:12000])
+            test_final_mean = np.mean(ytest[10000:12000])
             ax2.set_xlim(-200, 12000)
             ax2.set_ylim(-0.001, 0.15)
             ax2.text(3000, 0.08, 'train:%.5f\ntest :%.5f' % (train_final_mean, test_final_mean), fontdict=legend_font)
@@ -152,7 +152,7 @@ def plt_result(predict_data, training_data, text=None, save_fn=None, show=False)
     if show:
         plt.show()
     plt.savefig('plt_fig2.pdf', dpi=600)
-    plt.savefig('plt_fig2.tiff', dpi=600)
+    plt.savefig('plt_fig2.png', dpi=600)
     
 
 if __name__ == '__main__':
@@ -161,12 +161,12 @@ if __name__ == '__main__':
     # label = 'run1'
     save_dir = r'..\rtrain\final_training_module'
     # run_mse(os.path.join(save_dir, 'running_%s.log' % label), 'training_%s.pdf' % label)
-    text = ["Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : Adam\nRMSE: %.5f",
-            "Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Sigmod\nOptimizer     : Adam\nRMSE: %.5f",
-            "Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Tanh\nOptimizer     : Adam\nRMSE: %.5f",
-            "Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : SGD\nRMSE: %.5f",
-            "Hidden Layers : [100, 100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : Adam\nRMSE: %.5f",
-            "Hidden Layers : [500, 100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : Adam\nRMSE: %.5f"]
+    text = ["Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Sigmod\nOptimizer     : Adam\nRMSE: %.5f\nAccuracy: %.3f",
+            "Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Tanh\nOptimizer     : Adam\nRMSE: %.5f\nAccuracy: %.3f",
+            "Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : Adam\nRMSE: %.5f\nAccuracy: %.3f",
+            "Hidden Layers : [100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : SGD\nRMSE: %.5f\nAccuracy: %.3f",
+            "Hidden Layers : [100, 100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : SGD\nRMSE: %.5f\nAccuracy: %.3f",
+            "Hidden Layers : [500, 100, 50, 20]\nR-squared(R2) : %.5f\nActivation        : Relu\nOptimizer     : SGD\nRMSE: %.5f\nAccuracy: %.3f"]
     for i in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
     # for i in ['train_30_test.csv', 'train_30_train.csv', 'valid_40.csv']:
         predict_data, training_data = [], []
@@ -176,8 +176,8 @@ if __name__ == '__main__':
         # labels = ["3layer_100_adam", "3layer_100_sgd", "3layer_100_sgd_Sigmod", "3layer_100_sgd_Tanh",
         #           "4layer_100_sgd", "4layer_500_sgd"]
 
-        labels = ["3layer_100_relu", "3layer_100_sigmoid",
-                  "3layer_100_tanh", "3layer_100_relu_sgd",
+        labels = ["3layer_100_sigmoid", "3layer_100_tanh",
+                  "3layer_100_relu",  "3layer_100_relu_sgd",
                   "4layer_100", "4layer_500"]
 
         for label in labels: #'3layer_100_Elu', '3layer_100_PRelu',

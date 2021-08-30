@@ -26,6 +26,7 @@ def gather_data(fn):
     
 aa = lambda x: 0.05 if x < 0.5 else 0.95
 
+cc2cc = lambda x: 1 if x == '#F37878' else 0
 
 def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
     # 处理 BGPa对应的 元素名称
@@ -49,6 +50,15 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
     # fig, axes = plt.subplots(3, 2, figsize=(16, 8))
     # ax = axes[0]
     pd1 = gather_data(fn)
+    # da111111 = pd.DataFrame(pd1, columns=['CZT', 'PZT', 'T', 'N3', "V1"], index=None)
+    # da111111 = da111111.groupby(['N3'])
+    # for i, j in da111111:
+    #     print(i)
+    #     data222 = j.groupby(['V1'])
+    #     for nn, jj in data222:
+    #         print(origin_data[round(nn, 5)], ' '.join([str(ii) for ii in jj['CZT']]), ' '.join([str(ii) for ii in jj['PZT']]))
+    # exit()
+    
     for i in range(pd1.shape[0]):
         pd1[i][2] = int(pd1[i][2] * 550 + 100)
     c12 = {100: '#e8f1f8', 150: '#deebf7', 200: '#c6dbef', 250: '#a0c8e4', 300: '#9ecae1', 350: '#82c4ed',
@@ -88,6 +98,15 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
     
     if (ntype1 is not None) and (ntype2 is not None) and (fn2 is not None):
         npd1 = read_cal_predit(ntype1)
+        da111111 = pd.DataFrame(npd1, columns=['CN', 'PN', 'T', 'N3', "V1"], index=None)
+        da111111 = da111111.groupby(['N3'])
+        for i, j in da111111:
+            print(i)
+            data222 = j.groupby(['V1'])
+            for nn, jj in data222:
+                print(nn, origin_data[round(nn, 5)], ' '.join([str(ii) for ii in jj['PN']]))
+        exit()
+        
         ax0 = plt.subplot2grid((27, 2), (20, 0), colspan=1, rowspan=7)
         for i in range(npd1.shape[0]):
             symbol = origin_data[round(npd1[i][-1], 5)]
@@ -141,6 +160,7 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
                            }
         
         for i, (index, _tmp_label) in enumerate(txt_label.items()):
+            print(index, _tmp_label)
             ax2 = plt.subplot2grid((27, 2), (start_x[i], 1), colspan=1, rowspan=6)
             _tsd = deepcopy(dd[index])
             data = dd[index].groupby(["V1"])
@@ -176,18 +196,28 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
             
             # print(_tmp_data)
             iiddd = []
-            print(index)
-            print(_tmp_data.keys())
+            # print(index)
+            # print(_tmp_data.keys())
             for k in conpounds_index[index]:
                 iiddd.extend(_tmp_data[k])
                 
             for xx, (hh1, hh2, hh3, t_index, symbol) in enumerate(iiddd):
+                if xx % 12 == 0:
+                    zt, ne = [hh1], [cc2cc(hh2)]
+                elif xx % 12 == 11:
+                    zt.append(hh1)
+                    ne.append(cc2cc(hh2))
+                    print(symbol, ' '.join([str(ii) for ii in ne]), ' '.join([str(round(ii, 2)) for ii in zt]))
+                else:
+                    zt.append(hh1)
+                    ne.append(cc2cc(hh2))
+                    
+                # print(symbol, t_index, hh1, cc2cc(hh2))
                 ax2.bar(xx, hh1, width=width, color=hh2, alpha=hh3)
                 # ax2.bar(xx, zt_val[xx], width=width, color=_colors[xx], alpha=1)
                 if t_index == round(0.4545454545454545, 5):
                     _t_label_index.append(xx)
                     _t_label.append(symbol)
-                    
             ax2.set_xlim(-1, len(fdd))
             ax2.set_xticks(_t_label_index)
             ax2.set_xticklabels(_t_label)
@@ -214,7 +244,7 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
                 ax2.set_ylabel("                                          ZT$_{max}$", fontdict=label_font)
             else:
                 ax2.text(1, 0.85, txt_label[index], fontdict=label_font)
-            
+    exit()
     # plt.tight_layout()
     plt.subplots_adjust(left=0.06, bottom=0.08, right=0.98, top=0.95, hspace=1, wspace=0.1)
     plt.savefig('plt_valid_fig3.jpg', dpi=600)
@@ -227,7 +257,9 @@ def plt_predict_cal(fn, fn2, ntype1=None, ntype2=None):
 if __name__ == '__main__':
     save_dir = r'..\rtrain\final_training_module'
     save_dir2 = r'..\rtrain\final_ntype_training_module'
-    fn1 = r'10_for_check.csv'
+    # fn1 = r'10_for_check.csv'
+    fn1 = r'train_30_test.csv'
+    # fn1 = r'train_30_train.csv'
     fn2 = r'30_for_predict.csv'
     data_file1 = os.path.join(save_dir, 'z_result_valid_has_t_%s.out' % fn1)
     data_file2 = os.path.join(save_dir, 'z_result_valid_has_t_%s.out' % fn2)

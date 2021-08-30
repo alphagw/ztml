@@ -51,7 +51,9 @@ if __name__ == '__main__':
     head_dir = r'G:\ztml\ztml\rdata\all_rmcoref_data'
     fn2 = r'30_for_predict.csv'
     fn1 = r'10_for_check.csv'
-    
+    # fn2 = r'train_30_test.csv'
+    # fn1 = r'train_30_train.csv'
+
     # has_t 指定想要获取那一列特征并且输出到结果中，-5列是温度(必须去掉label列)，第3列是C原子总数, 第12列wei B_Gpa, 可以区分开化合物的一列
     # has_t 指定想要获取那一列特征并且输出到结果中，-1列是温度(必须去掉2个label列)，第3列是C原子总数, 第8列c轴长度, 可以区分开化合物的一列
     has_t = [-1, 2, 7]
