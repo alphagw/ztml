@@ -3,6 +3,7 @@
 #### Introduction
 ZT value of thermoelectric materials by Machine Learning.
 
+Based on ALKEMIE (https://alkemine.org) and MatMLF (Machine Learning Framework for Materials, under developing by our team.)
 
 #### Install
 
