@@ -17,12 +17,15 @@ import torch.utils.data as Data
 
 class PmData(Dataset):
     
-    def __init__(self, csv_file, zt=True):
+    def __init__(self, csv_file, zt=True, output2=False):
         self.data = pd.read_csv(csv_file).values
         self.train_data = self.data[:, :-2]
         
         if zt:
-            self.label = self.data[:, -1]
+            if output2:
+                self.label = self.data[:, -2:]
+            else:
+                self.label = self.data[:, -1]
         else:
             self.label = self.data[:, -2]
         
@@ -34,8 +37,8 @@ class PmData(Dataset):
         return len(self.data)
 
 
-def load_pmdata(csv_file, batch_size=588, shuffle=True, zt=True):
-    pmdata = PmData(csv_file, zt=zt)
+def load_pmdata(csv_file, batch_size=588, shuffle=True, zt=True, output2=False):
+    pmdata = PmData(csv_file, zt=zt, output2=output2)
     train_loader = Data.DataLoader(dataset=pmdata, batch_size=batch_size, shuffle=shuffle)
     return train_loader
 

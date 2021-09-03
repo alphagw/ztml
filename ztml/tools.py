@@ -28,13 +28,16 @@ def norepeat_randint(data: list, ratio=0.3):
     """
     num = round(len(data) * ratio)
     a = np.random.randint(0, len(data), num)
-    if len(list(set(a.tolist()))) != num:
-        dd = list(range(len(data)))
-        np.random.shuffle(dd)
-        return dd[:num]
+    if a.shape[0] != 0:
+        if len(list(set(a.tolist()))) != num:
+            dd = list(range(len(data)))
+            np.random.shuffle(dd)
+            return dd[:num]
+        else:
+            return a
     else:
-        return a
-
+        return None
+    
 
 def get_train_test_index(data, column_index, ratio, to_data=False):
     """
@@ -46,7 +49,7 @@ def get_train_test_index(data, column_index, ratio, to_data=False):
     :return: 训练集和测试集的索引 或者 训练集和测试集数据
     """
     dd = data.groupby(column_index)
-    np.random.seed(30)
+    np.random.seed(31)
     test_index = []
     for i, j in dd.groups.items():
         d = j[norepeat_randint(j, ratio=ratio)]
@@ -62,7 +65,8 @@ def get_train_test_index(data, column_index, ratio, to_data=False):
         return train_index, test_index
 
 
-def get_random_groupby_index(data, column_index, ratio, to_data=False):
+def get_random_groupby_index(data, column_index, ratio, to_data=False,
+                             test_index=None, train_index=None):
     """
     读取csv数据，根据指定列先分组，并在将每一组都分成训练集和测试集，返回测试集的索引
     :param data
@@ -72,16 +76,42 @@ def get_random_groupby_index(data, column_index, ratio, to_data=False):
     :return: 训练集和测试集的索引 或者 训练集和测试集数据
     """
     dd = data.groupby(column_index)
-    np.random.seed(30)
+    # num = data.shape[0]
+    np.random.seed(31)
     # _tmp = list(dd.groups.keys())
-    train_index = norepeat_randint(range(len(dd.groups)), ratio=ratio)
-    test_index, test_data, train_data = [], [], []
+    # if train_index is not None and len(train_index) < int(num * ratio):
+    #     ratio = (int(num * ratio) - len(train_index)) / num
+    #     _tmp_train_index = norepeat_randint(range(len(dd.groups)), ratio=ratio)
+    #     train_index.extend(_tmp_train_index)
+    # elif train_index is not None and len(train_index) == int(num * ratio):
+    #     pass
+    # elif train_index is not None and len(train_index) > int(num * ratio):
+    #     raise ValueError("train_index: %d > %d" %(len(train_index), int(num * ratio)))
+    # else:
+    #     train_index = norepeat_randint(range(len(dd.groups)), ratio=ratio)
+    if train_index is not None:
+        pass
+    else:
+        train_index = []
+        _tmp_index = norepeat_randint(range(len(dd.groups)), ratio=ratio)
+        for jdd, (kk, ss) in enumerate(dd.groups.items()):
+            if jdd in _tmp_index:
+                train_index.append(int(data.loc[dd.groups[kk][0]]['Index'] * 69 + 1))
+        
+    if test_index is not None:
+       pass
+    else:
+        test_index = []
+        
+    test_data, train_data = [], []
     for j, (m, n) in enumerate(dd.groups.items()):
-        if j in train_index:
-            test_data.append(data.loc[dd.groups[m]])
-        else:
-            test_index.append(j)
+        jj = int(data.loc[dd.groups[m][0]]['Index'] * 69 + 1)
+        if jj in train_index:
             train_data.append(data.loc[dd.groups[m]])
+        else:
+            if jj not in test_index:
+                test_index.append(j)
+            test_data.append(data.loc[dd.groups[m]])
             
     train_data = pd.concat(train_data, ignore_index=True, copy=True)
     test_data = pd.concat(test_data, ignore_index=True, copy=True)
