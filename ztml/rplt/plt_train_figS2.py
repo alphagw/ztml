@@ -191,12 +191,12 @@ if __name__ == '__main__':
             "Activation : Sigmod\nOptimizer : Adam\nHidden Layers :\n[100, 50, 20]\nAccuracy: %.3f",
             "Activation : Tanh\nOptimizer : Adam\nHidden Layers :\n[100, 50, 20]\nAccuracy: %.3f",
             "Activation : Tanh\nOptimizer : SGD\nHidden Layers :\n[100, 50, 20]\nAccuracy: %.3f",
-            "Activation : Tanh\nOptimizer : Adam\nHidden Layers :\n[100, 100, 50, 20]\nAccuracy: %.3f",
-            "Activation : Tanh\nOptimizer : Adam\nHidden Layers :\n[500, 100, 50, 20]\nAccuracy: %.3f"]
+            "Activation : Tanh\nOptimizer : SGD\nHidden Layers :\n[100, 100, 50, 20]\nAccuracy: %.3f",
+            "Activation : Tanh\nOptimizer : SGD\nHidden Layers :\n[500, 100, 50, 20]\nAccuracy: %.3f"]
     labels = ["3layer_100_relu", "3layer_100_sigmoid", "3layer_100_tanh",
               "3layer_100_relu_sgd", "4layer_100", "4layer_500"]
     # nums = [8, 21, 8, 658, 558, 599]
-    nums = [8, 20, 6, 138, 193, 208]
+    nums = [8, 20, 5, 138, 193, 208]
 
     for i in ['train_30_train.csv', 'train_30_test.csv', 'valid_40.csv']:
         predict_data, training_data = [], []
